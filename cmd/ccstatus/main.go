@@ -56,11 +56,21 @@ func run() error {
 		cfg = config.Default()
 	}
 
-	// Create cache
+	// Create cache with session isolation
 	var c core.Cache
+	var fc *cache.FileCache
 	if cfg.GetBool("cache.enabled", true) {
 		cacheDir := cfg.GetString("cache.dir", os.TempDir())
-		c = cache.NewFileCache(cacheDir)
+		fc = cache.NewFileCache(cacheDir, claudeSession.SessionID)
+		c = fc
+
+		// Cleanup old cache files occasionally (10% chance)
+		if len(os.Args) > 0 && os.Args[0] != "" {
+			// Simple random: use last byte of session ID
+			if len(claudeSession.SessionID) > 0 && claudeSession.SessionID[len(claudeSession.SessionID)-1]%10 == 0 {
+				fc.Cleanup()
+			}
+		}
 	} else {
 		c = cache.NewNullCache()
 	}
@@ -97,6 +107,11 @@ func run() error {
 	// Render and output the status line
 	output := statusLine.Render(ctx)
 	fmt.Println(output)
+
+	// Save cache if using FileCache
+	if fc != nil {
+		fc.Save()
+	}
 
 	return nil
 }
