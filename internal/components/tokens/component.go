@@ -4,7 +4,12 @@ import (
 	"fmt"
 
 	"github.com/mirage20/ccstatus-go/internal/core"
+	"github.com/mirage20/ccstatus-go/internal/format"
 	"github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
+)
+
+const (
+	iconContext = "\uea7b" // Nerd Font: Context/Tokens icon
 )
 
 // Component displays session token usage
@@ -34,19 +39,16 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 		return ""
 	}
 
-	f := ctx.Formatter()
-	
 	// Get context limit from config (default 200k for Claude models)
 	contextLimit := ctx.Config().GetInt64("components.tokens.context_limit", 200000)
 	percentage := float64(total) / float64(contextLimit) * 100
 
 	// Determine color based on usage percentage
 	color := c.getUsageColor(percentage)
-	
-	icon := f.Icon("context")
-	formatted := f.FormatTokens(total)
 
-	return f.Color(color, fmt.Sprintf("%s %s", icon, formatted))
+	formatted := format.FormatWithUnit(total)
+
+	return format.Colorize(color, fmt.Sprintf("%s %s", iconContext, formatted))
 }
 
 // Enabled checks if the component should be rendered
@@ -69,13 +71,13 @@ func (c *Component) ShouldRender(ctx *core.RenderContext) bool {
 }
 
 // getUsageColor returns color based on usage percentage
-func (c *Component) getUsageColor(percentage float64) core.ColorStyle {
+func (c *Component) getUsageColor(percentage float64) format.Color {
 	switch {
 	case percentage > 90:
-		return core.ColorRed
+		return format.ColorRed
 	case percentage > 80:
-		return core.ColorYellow
+		return format.ColorYellow
 	default:
-		return core.ColorGreen
+		return format.ColorGreen
 	}
 }

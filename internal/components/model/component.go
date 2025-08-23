@@ -5,7 +5,12 @@ import (
 	"strings"
 
 	"github.com/mirage20/ccstatus-go/internal/core"
+	"github.com/mirage20/ccstatus-go/internal/format"
 	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
+)
+
+const (
+	iconModel = "\uf2db" // Nerd Font: Microchip icon
 )
 
 // Component displays the Claude model information
@@ -30,16 +35,13 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 		return ""
 	}
 
-	f := ctx.Formatter()
-	
 	// Extract model name - always shorten to just the model type
 	modelName := c.extractModelName(sessionInfo.Model.DisplayName)
-	
+
 	// Determine color based on model
 	color := c.getModelColor(sessionInfo.Model.DisplayName)
-	
-	icon := f.Icon("ai")
-	return f.Color(color, fmt.Sprintf("%s %s", icon, modelName))
+
+	return format.Colorize(color, fmt.Sprintf("%s %s", iconModel, modelName))
 }
 
 // Enabled checks if the component should be rendered
@@ -71,15 +73,15 @@ func (c *Component) extractModelName(displayName string) string {
 }
 
 // getModelColor returns the appropriate color for the model
-func (c *Component) getModelColor(displayName string) core.ColorStyle {
+func (c *Component) getModelColor(displayName string) format.Color {
 	switch {
 	case strings.Contains(displayName, "Opus"):
-		return core.ColorMagenta
+		return format.ColorMagenta
 	case strings.Contains(displayName, "Sonnet"):
-		return core.ColorCyan
+		return format.ColorCyan
 	case strings.Contains(displayName, "Haiku"):
-		return core.ColorGreen
+		return format.ColorGreen
 	default:
-		return core.ColorBlue
+		return format.ColorYellow
 	}
 }

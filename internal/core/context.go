@@ -4,20 +4,18 @@ import "sync"
 
 // RenderContext holds all data and utilities for rendering
 type RenderContext struct {
-	data      map[ProviderKey]interface{}
-	errors    map[ProviderKey]error
-	formatter Formatter
-	config    *Config
-	mu        sync.RWMutex
+	data   map[ProviderKey]interface{}
+	errors map[ProviderKey]error
+	config *Config
+	mu     sync.RWMutex
 }
 
 // NewRenderContext creates a new render context
-func NewRenderContext(config *Config, formatter Formatter) *RenderContext {
+func NewRenderContext(config *Config) *RenderContext {
 	return &RenderContext{
-		data:      make(map[ProviderKey]interface{}),
-		errors:    make(map[ProviderKey]error),
-		formatter: formatter,
-		config:    config,
+		data:   make(map[ProviderKey]interface{}),
+		errors: make(map[ProviderKey]error),
+		config: config,
 	}
 }
 
@@ -56,11 +54,6 @@ func (ctx *RenderContext) GetError(key ProviderKey) (error, bool) {
 	defer ctx.mu.RUnlock()
 	err, exists := ctx.errors[key]
 	return err, exists
-}
-
-// Formatter returns the formatter
-func (ctx *RenderContext) Formatter() Formatter {
-	return ctx.formatter
 }
 
 // Config returns the configuration

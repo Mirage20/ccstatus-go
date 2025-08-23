@@ -5,7 +5,13 @@ import (
 	"time"
 
 	"github.com/mirage20/ccstatus-go/internal/core"
+	"github.com/mirage20/ccstatus-go/internal/format"
 	"github.com/mirage20/ccstatus-go/internal/providers/blockusage"
+)
+
+const (
+	iconArrow = "\U000F0E7A" // Nerd Font: Up-down arrow icon
+	iconClock = "\uf017"     // Nerd Font: Clock icon
 )
 
 // Component displays 5-hour block usage
@@ -34,22 +40,18 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 		return ""
 	}
 
-	f := ctx.Formatter()
-
 	// Determine color based on usage percentage
 	color := c.getUsageColor(blockUsage.UsagePercentage)
-	
+
 	// Format the token usage part
-	arrowIcon := f.Icon("arrow")
-	formattedTokens := f.FormatTokens(blockUsage.TotalTokens)
-	formattedPercentage := f.FormatPercentage(blockUsage.UsagePercentage)
-	
-	tokenPart := f.Color(color, fmt.Sprintf("%s %s %s", arrowIcon, formattedTokens, formattedPercentage))
-	
+	formattedTokens := format.FormatWithUnit(blockUsage.TotalTokens)
+	formattedPercentage := format.FormatPercentage(blockUsage.UsagePercentage)
+
+	tokenPart := format.Colorize(color, fmt.Sprintf("%s %s %s", iconArrow, formattedTokens, formattedPercentage))
+
 	// Format the time part with end time
-	clockIcon := f.Icon("clock")
 	formattedTime := c.formatRemainingTime(blockUsage.RemainingMinutes, blockUsage.EndTime)
-	timePart := f.Color(core.ColorGray, fmt.Sprintf("| %s %s", clockIcon, formattedTime))
+	timePart := format.Colorize(format.ColorGray, fmt.Sprintf("| %s %s", iconClock, formattedTime))
 
 	return tokenPart + " " + timePart
 }
@@ -74,14 +76,14 @@ func (c *Component) ShouldRender(ctx *core.RenderContext) bool {
 }
 
 // getUsageColor returns color based on usage percentage
-func (c *Component) getUsageColor(percentage float64) core.ColorStyle {
+func (c *Component) getUsageColor(percentage float64) format.Color {
 	switch {
 	case percentage > 80:
-		return core.ColorRed
+		return format.ColorRed
 	case percentage > 60:
-		return core.ColorYellow
+		return format.ColorYellow
 	default:
-		return core.ColorGreen
+		return format.ColorGreen
 	}
 }
 
@@ -90,7 +92,7 @@ func (c *Component) formatRemainingTime(minutes int, endTimeStr string) string {
 	if minutes <= 0 {
 		return "expired"
 	}
-	
+
 	// Format remaining time
 	var remaining string
 	if minutes < 60 {
@@ -104,7 +106,7 @@ func (c *Component) formatRemainingTime(minutes int, endTimeStr string) string {
 			remaining = fmt.Sprintf("%dh%dm", hours, mins)
 		}
 	}
-	
+
 	// Parse and format end time if available
 	if endTimeStr != "" {
 		endTime, err := time.Parse(time.RFC3339, endTimeStr)
@@ -114,7 +116,7 @@ func (c *Component) formatRemainingTime(minutes int, endTimeStr string) string {
 			minute := endTime.Local().Minute()
 			ampm := "AM"
 			displayHour := hour
-			
+
 			if hour >= 12 {
 				ampm = "PM"
 				if hour > 12 {
@@ -123,11 +125,11 @@ func (c *Component) formatRemainingTime(minutes int, endTimeStr string) string {
 			} else if hour == 0 {
 				displayHour = 12
 			}
-			
+
 			timeStr := fmt.Sprintf("%d:%02d %s", displayHour, minute, ampm)
-			return fmt.Sprintf("%s (%s)", remaining, timeStr)
+			return fmt.Sprintf("%s %s", remaining, timeStr)
 		}
 	}
-	
+
 	return remaining
 }

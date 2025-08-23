@@ -13,15 +13,13 @@ type StatusLine struct {
 	components []Component
 	cache      Cache
 	config     *Config
-	formatter  Formatter
 }
 
 // NewStatusLine creates a new status line
-func NewStatusLine(config *Config, formatter Formatter, cache Cache) *StatusLine {
+func NewStatusLine(config *Config, cache Cache) *StatusLine {
 	return &StatusLine{
-		config:    config,
-		formatter: formatter,
-		cache:     cache,
+		config: config,
+		cache:  cache,
 	}
 }
 
@@ -38,7 +36,7 @@ func (sl *StatusLine) AddComponent(c Component) {
 // Render generates the complete status line
 func (sl *StatusLine) Render(ctx context.Context) string {
 	// Create render context
-	renderCtx := NewRenderContext(sl.config, sl.formatter)
+	renderCtx := NewRenderContext(sl.config)
 
 	// Gather data from all providers in parallel
 	sl.gatherData(ctx, renderCtx)
@@ -69,9 +67,6 @@ func (sl *StatusLine) Render(ctx context.Context) string {
 
 	// Join with separator
 	separator := sl.config.GetString("display.separator", " | ")
-	if sl.formatter != nil {
-		separator = sl.formatter.Color(ColorGray, separator)
-	}
 	return strings.Join(outputs, separator)
 }
 

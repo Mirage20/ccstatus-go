@@ -13,7 +13,6 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/components/tokens"
 	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
-	"github.com/mirage20/ccstatus-go/internal/formatter"
 	blockusageProvider "github.com/mirage20/ccstatus-go/internal/providers/blockusage"
 	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 	"github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
@@ -57,9 +56,6 @@ func run() error {
 		cfg = config.Default()
 	}
 
-	// Create formatter
-	f := formatter.NewDefaultFormatter()
-
 	// Create cache
 	var c core.Cache
 	if cfg.GetBool("cache.enabled", true) {
@@ -70,29 +66,29 @@ func run() error {
 	}
 
 	// Create status line
-	statusLine := core.NewStatusLine(cfg, f, c)
+	statusLine := core.NewStatusLine(cfg, c)
 
 	// Add providers - each provider gets only what it needs from Claude session
-	
+
 	// Session info provider - provides model and session information
 	statusLine.AddProvider(sessioninfo.NewProvider(claudeSession))
-	
+
 	// Token usage provider - reads transcript file
 	statusLine.AddProvider(tokenusage.NewProvider(claudeSession))
-	
+
 	// Block usage provider - executes ccusage command
 	statusLine.AddProvider(blockusageProvider.NewProvider())
-	
+
 	// TODO: Add git provider when implemented
 	// if cfg.GetBool("providers.git.enabled", false) && claudeSession.CWD != "" {
 	//     statusLine.AddProvider(git.NewProvider(claudeSession.CWD))
 	// }
 
 	// Add components using the component packages
-	statusLine.AddComponent(model.New(1))      // Priority 1
-	statusLine.AddComponent(tokens.New(2))     // Priority 2
+	statusLine.AddComponent(model.New(1))               // Priority 1
+	statusLine.AddComponent(tokens.New(2))              // Priority 2
 	statusLine.AddComponent(blockusageComponent.New(3)) // Priority 3
-	
+
 	// TODO: Add git component when implemented
 	// if cfg.GetBool("components.git.enabled", false) {
 	//     statusLine.AddComponent(git.New(4))
@@ -141,7 +137,7 @@ func showHelp() {
 		},
 		Version: "1.0.0",
 	}
-	
+
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("  ", "  ")
 	encoder.Encode(example)
