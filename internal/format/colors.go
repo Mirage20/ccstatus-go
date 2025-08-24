@@ -19,3 +19,18 @@ const (
 func Colorize(color Color, text string) string {
 	return string(color) + text + string(ColorReset)
 }
+
+// Dimmed applies gray color for dimmed text
+func Dimmed(text string) string {
+	return Colorize(ColorGray, text)
+}
+
+// Green applies green color
+func Green(text string) string {
+	return Colorize(ColorGreen, text)
+}
+
+// Red applies red color
+func Red(text string) string {
+	return Colorize(ColorRed, text)
+}

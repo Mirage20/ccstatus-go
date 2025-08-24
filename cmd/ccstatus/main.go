@@ -9,9 +9,12 @@ import (
 	"time"
 
 	"github.com/mirage20/ccstatus-go/internal/cache"
-	blockusageComponent "github.com/mirage20/ccstatus-go/internal/components/blockusage"
-	"github.com/mirage20/ccstatus-go/internal/components/model"
-	"github.com/mirage20/ccstatus-go/internal/components/tokens"
+	"github.com/mirage20/ccstatus-go/internal/components/ccusage/activeblock"
+	"github.com/mirage20/ccstatus-go/internal/components/claudecode/changes"
+	cccontext "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
+	"github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
+	"github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
+	"github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
 	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
 	blockusageProvider "github.com/mirage20/ccstatus-go/internal/providers/blockusage"
@@ -103,9 +106,12 @@ func run() error {
 	// }
 
 	// Add components using the component packages
-	statusLine.AddComponent(model.New(1))               // Priority 1
-	statusLine.AddComponent(tokens.New(2))              // Priority 2
-	statusLine.AddComponent(blockusageComponent.New(3)) // Priority 3
+	statusLine.AddComponent(model.New(1))       // Priority 1: Model name
+	statusLine.AddComponent(cccontext.New(2))   // Priority 2: Context usage
+	statusLine.AddComponent(activeblock.New(3)) // Priority 3: Block usage
+	statusLine.AddComponent(changes.New(4))     // Priority 4: Lines changed
+	statusLine.AddComponent(duration.New(5))    // Priority 5: Session duration
+	statusLine.AddComponent(version.New(6))     // Priority 6: Claude version
 
 	// TODO: Add git component when implemented
 	// if cfg.GetBool("components.git.enabled", false) {

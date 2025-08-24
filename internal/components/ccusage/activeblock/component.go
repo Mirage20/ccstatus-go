@@ -1,4 +1,4 @@
-package blockusage
+package activeblock
 
 import (
 	"fmt"

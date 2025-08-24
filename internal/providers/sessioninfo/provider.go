@@ -25,9 +25,11 @@ func (p *Provider) Key() core.ProviderKey {
 // Provide returns the session information
 func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	return &SessionInfo{
-		Model:     p.session.Model,
-		SessionID: p.session.SessionID,
-		Version:   p.session.Version,
-		Workspace: p.session.Workspace,
+		Model:       p.session.Model,
+		SessionID:   p.session.SessionID,
+		Version:     p.session.Version,
+		Workspace:   p.session.Workspace,
+		Cost:        p.session.Cost,
+		Exceeds200K: p.session.Exceeds200K,
 	}, nil
 }

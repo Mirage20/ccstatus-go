@@ -26,3 +26,39 @@ func FormatDuration(minutes int) string {
 	}
 	return fmt.Sprintf("%dh%dm", hours, mins)
 }
+
+// Duration formats milliseconds into a human-readable duration
+// Examples:
+//
+//	45000  -> "45s"
+//	90000  -> "1m30s"
+//	120000 -> "2m"
+//	3600000 -> "1h"
+func Duration(ms int64) string {
+	if ms <= 0 {
+		return "0s"
+	}
+
+	seconds := ms / 1000
+	if seconds < 60 {
+		return fmt.Sprintf("%ds", seconds)
+	}
+
+	minutes := seconds / 60
+	secs := seconds % 60
+
+	if minutes < 60 {
+		if secs == 0 {
+			return fmt.Sprintf("%dm", minutes)
+		}
+		return fmt.Sprintf("%dm%ds", minutes, secs)
+	}
+
+	hours := minutes / 60
+	mins := minutes % 60
+
+	if mins == 0 {
+		return fmt.Sprintf("%dh", hours)
+	}
+	return fmt.Sprintf("%dh%dm", hours, mins)
+}
