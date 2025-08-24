@@ -1,9 +1,9 @@
 package format
 
-// Color represents an ANSI color code
+// Color represents an ANSI color code.
 type Color string
 
-// ANSI color codes
+// ANSI color codes.
 const (
 	ColorReset   Color = "\033[0m"
 	ColorRed     Color = "\033[31m"
@@ -15,22 +15,22 @@ const (
 	ColorGray    Color = "\033[90m"
 )
 
-// Colorize applies a color to text and resets at the end
+// Colorize applies a color to text and resets at the end.
 func Colorize(color Color, text string) string {
 	return string(color) + text + string(ColorReset)
 }
 
-// Dimmed applies gray color for dimmed text
+// Dimmed applies gray color for dimmed text.
 func Dimmed(text string) string {
 	return Colorize(ColorGray, text)
 }
 
-// Green applies green color
+// Green applies green color.
 func Green(text string) string {
 	return Colorize(ColorGreen, text)
 }
 
-// Red applies red color
+// Red applies red color.
 func Red(text string) string {
 	return Colorize(ColorRed, text)
 }

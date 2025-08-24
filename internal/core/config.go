@@ -1,18 +1,18 @@
 package core
 
-// Config holds application configuration
+// Config holds application configuration.
 type Config struct {
 	data map[string]interface{}
 }
 
-// NewConfig creates a new configuration
+// NewConfig creates a new configuration.
 func NewConfig() *Config {
 	return &Config{
 		data: make(map[string]interface{}),
 	}
 }
 
-// Get retrieves a configuration value
+// Get retrieves a configuration value.
 func (c *Config) Get(key string, defaultValue interface{}) interface{} {
 	if value, exists := c.data[key]; exists {
 		return value
@@ -20,7 +20,7 @@ func (c *Config) Get(key string, defaultValue interface{}) interface{} {
 	return defaultValue
 }
 
-// GetBool retrieves a boolean configuration value
+// GetBool retrieves a boolean configuration value.
 func (c *Config) GetBool(key string, defaultValue bool) bool {
 	value := c.Get(key, defaultValue)
 	if boolValue, ok := value.(bool); ok {
@@ -29,7 +29,7 @@ func (c *Config) GetBool(key string, defaultValue bool) bool {
 	return defaultValue
 }
 
-// GetInt retrieves an integer configuration value
+// GetInt retrieves an integer configuration value.
 func (c *Config) GetInt(key string, defaultValue int) int {
 	value := c.Get(key, defaultValue)
 	if intValue, ok := value.(int); ok {
@@ -38,7 +38,7 @@ func (c *Config) GetInt(key string, defaultValue int) int {
 	return defaultValue
 }
 
-// GetInt64 retrieves an int64 configuration value
+// GetInt64 retrieves an int64 configuration value.
 func (c *Config) GetInt64(key string, defaultValue int64) int64 {
 	value := c.Get(key, defaultValue)
 	if intValue, ok := value.(int64); ok {
@@ -47,7 +47,7 @@ func (c *Config) GetInt64(key string, defaultValue int64) int64 {
 	return defaultValue
 }
 
-// GetString retrieves a string configuration value
+// GetString retrieves a string configuration value.
 func (c *Config) GetString(key string, defaultValue string) string {
 	value := c.Get(key, defaultValue)
 	if strValue, ok := value.(string); ok {
@@ -56,7 +56,7 @@ func (c *Config) GetString(key string, defaultValue string) string {
 	return defaultValue
 }
 
-// Set stores a configuration value
+// Set stores a configuration value.
 func (c *Config) Set(key string, value interface{}) {
 	c.data[key] = value
 }

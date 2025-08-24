@@ -8,28 +8,28 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/core"
 )
 
-// Provider provides block usage by executing ccusage command
+// Provider provides block usage by executing ccusage command.
 type Provider struct {
 	// This provider doesn't need ClaudeSession!
 }
 
-// NewProvider creates a new block usage provider
+// NewProvider creates a new block usage provider.
 func NewProvider() *Provider {
 	return &Provider{}
 }
 
-// Key returns the unique identifier for this provider
+// Key returns the unique identifier for this provider.
 func (p *Provider) Key() core.ProviderKey {
 	return Key
 }
 
-// Provide executes ccusage and returns block usage data
+// Provide executes ccusage and returns block usage data.
 func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	usage := p.getActiveBlockUsage()
 	return usage, nil
 }
 
-// getActiveBlockUsage executes ccusage command and parses the result
+// getActiveBlockUsage executes ccusage command and parses the result.
 func (p *Provider) getActiveBlockUsage() *BlockUsage {
 	zeroBlockUsage := &BlockUsage{
 		InputTokens:              0,
@@ -90,12 +90,12 @@ func (p *Provider) getActiveBlockUsage() *BlockUsage {
 	}
 }
 
-// CCUsageOutput represents the JSON output from ccusage command
+// CCUsageOutput represents the JSON output from ccusage command.
 type CCUsageOutput struct {
 	Blocks []Block `json:"blocks"`
 }
 
-// Block represents a 5-hour usage block
+// Block represents a 5-hour usage block.
 type Block struct {
 	IsActive    bool        `json:"isActive"`
 	TotalTokens int64       `json:"totalTokens"`
@@ -104,7 +104,7 @@ type Block struct {
 	EndTime     string      `json:"endTime"`
 }
 
-// TokenCounts contains detailed token counts
+// TokenCounts contains detailed token counts.
 type TokenCounts struct {
 	InputTokens              int64 `json:"inputTokens"`
 	OutputTokens             int64 `json:"outputTokens"`
@@ -112,12 +112,12 @@ type TokenCounts struct {
 	CacheReadInputTokens     int64 `json:"cacheReadInputTokens"`
 }
 
-// Projection contains usage projection data
+// Projection contains usage projection data.
 type Projection struct {
 	RemainingMinutes int `json:"remainingMinutes"`
 }
 
-// BlockUsage represents 5-hour block usage
+// BlockUsage represents 5-hour block usage.
 type BlockUsage struct {
 	InputTokens              int64
 	OutputTokens             int64
@@ -129,10 +129,10 @@ type BlockUsage struct {
 	UsagePercentage          float64
 }
 
-// Key is the provider key
+// Key is the provider key.
 const Key = core.ProviderKey("blockusage")
 
-// GetBlockUsage is a typed getter for components
+// GetBlockUsage is a typed getter for components.
 func GetBlockUsage(ctx *core.RenderContext) (*BlockUsage, bool) {
 	return core.Get[*BlockUsage](ctx, Key)
 }

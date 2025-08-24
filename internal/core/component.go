@@ -1,6 +1,6 @@
 package core
 
-// Component renders a part of the status line
+// Component renders a part of the status line.
 type Component interface {
 	// Name returns the component identifier
 	Name() string
@@ -15,7 +15,7 @@ type Component interface {
 	Priority() int
 }
 
-// OptionalComponent can be conditionally displayed
+// OptionalComponent can be conditionally displayed.
 type OptionalComponent interface {
 	Component
 

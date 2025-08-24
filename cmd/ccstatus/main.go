@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -130,13 +131,13 @@ func run() error {
 	return nil
 }
 
-// readClaudeSession reads the Claude session information from stdin
+// readClaudeSession reads the Claude session information from stdin.
 func readClaudeSession(reader io.Reader) (*core.ClaudeSession, error) {
 	var session core.ClaudeSession
 	decoder := json.NewDecoder(reader)
 	if err := decoder.Decode(&session); err != nil {
 		if err == io.EOF {
-			return nil, fmt.Errorf("no input provided")
+			return nil, errors.New("no input provided")
 		}
 		return nil, fmt.Errorf("failed to parse Claude session: %w", err)
 	}

@@ -10,24 +10,24 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/core"
 )
 
-// Provider provides token usage by reading from transcript file
+// Provider provides token usage by reading from transcript file.
 type Provider struct {
 	transcriptPath string
 }
 
-// NewProvider creates a new token usage provider
+// NewProvider creates a new token usage provider.
 func NewProvider(session *core.ClaudeSession) *Provider {
 	return &Provider{
 		transcriptPath: session.TranscriptPath,
 	}
 }
 
-// Key returns the unique identifier for this provider
+// Key returns the unique identifier for this provider.
 func (p *Provider) Key() core.ProviderKey {
 	return Key
 }
 
-// Provide reads and returns token usage from transcript
+// Provide reads and returns token usage from transcript.
 func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	if p.transcriptPath == "" {
 		return &TokenUsage{}, nil
@@ -37,7 +37,7 @@ func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	return usage, nil
 }
 
-// readTranscript reads the transcript file and extracts token usage
+// readTranscript reads the transcript file and extracts token usage.
 func (p *Provider) readTranscript() *TokenUsage {
 	zeroUsage := &TokenUsage{
 		InputTokens:              0,
@@ -96,19 +96,19 @@ func (p *Provider) readTranscript() *TokenUsage {
 	return zeroUsage
 }
 
-// TranscriptEntry represents a line in the transcript file
+// TranscriptEntry represents a line in the transcript file.
 type TranscriptEntry struct {
 	Type        string  `json:"type"`
 	IsSidechain bool    `json:"isSidechain"`
 	Message     Message `json:"message"`
 }
 
-// Message contains the message data including usage
+// Message contains the message data including usage.
 type Message struct {
 	Usage *Usage `json:"usage"`
 }
 
-// Usage contains token usage information
+// Usage contains token usage information.
 type Usage struct {
 	InputTokens              int64 `json:"input_tokens"`
 	OutputTokens             int64 `json:"output_tokens"`
@@ -116,7 +116,7 @@ type Usage struct {
 	CacheReadInputTokens     int64 `json:"cache_read_input_tokens"`
 }
 
-// TokenUsage represents token consumption
+// TokenUsage represents token consumption.
 type TokenUsage struct {
 	InputTokens              int64
 	OutputTokens             int64
@@ -124,15 +124,15 @@ type TokenUsage struct {
 	CacheReadInputTokens     int64
 }
 
-// Total returns total token count
+// Total returns total token count.
 func (t *TokenUsage) Total() int64 {
 	return t.InputTokens + t.OutputTokens + t.CacheCreationInputTokens + t.CacheReadInputTokens
 }
 
-// Key is the provider key
+// Key is the provider key.
 const Key = core.ProviderKey("tokenusage")
 
-// GetTokenUsage is a typed getter for components
+// GetTokenUsage is a typed getter for components.
 func GetTokenUsage(ctx *core.RenderContext) (*TokenUsage, bool) {
 	return core.Get[*TokenUsage](ctx, Key)
 }

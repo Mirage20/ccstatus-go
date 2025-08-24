@@ -14,22 +14,22 @@ const (
 	iconClock = "\uf017"     // Nerd Font: Clock icon
 )
 
-// Component displays 5-hour block usage
+// Component displays 5-hour block usage.
 type Component struct {
 	priority int
 }
 
-// New creates a new block usage component
+// New creates a new block usage component.
 func New(priority int) *Component {
 	return &Component{priority: priority}
 }
 
-// Name returns the component name
+// Name returns the component name.
 func (c *Component) Name() string {
 	return "blockusage"
 }
 
-// Render generates the block usage display string
+// Render generates the block usage display string.
 func (c *Component) Render(ctx *core.RenderContext) string {
 	blockUsage, ok := blockusage.GetBlockUsage(ctx)
 	if !ok {
@@ -56,17 +56,17 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 	return tokenPart + " " + timePart
 }
 
-// Enabled checks if the component should be rendered
+// Enabled checks if the component should be rendered.
 func (c *Component) Enabled(config *core.Config) bool {
 	return config.GetBool("components.blockusage.enabled", true)
 }
 
-// Priority returns the component priority
+// Priority returns the component priority.
 func (c *Component) Priority() int {
 	return c.priority
 }
 
-// ShouldRender implements OptionalComponent for conditional display
+// ShouldRender implements OptionalComponent for conditional display.
 func (c *Component) ShouldRender(ctx *core.RenderContext) bool {
 	blockUsage, ok := blockusage.GetBlockUsage(ctx)
 	if !ok {
@@ -75,7 +75,7 @@ func (c *Component) ShouldRender(ctx *core.RenderContext) bool {
 	return blockUsage.TotalTokens > 0
 }
 
-// getUsageColor returns color based on usage percentage
+// getUsageColor returns color based on usage percentage.
 func (c *Component) getUsageColor(percentage float64) format.Color {
 	switch {
 	case percentage > 80:
@@ -87,7 +87,7 @@ func (c *Component) getUsageColor(percentage float64) format.Color {
 	}
 }
 
-// formatRemainingTime formats the remaining time with end time like the TypeScript version
+// formatRemainingTime formats the remaining time with end time like the TypeScript version.
 func (c *Component) formatRemainingTime(minutes int, endTimeStr string) string {
 	if minutes <= 0 {
 		return "expired"

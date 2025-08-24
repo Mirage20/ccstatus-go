@@ -13,22 +13,22 @@ const (
 	iconModel = "\uf2db" // Nerd Font: Microchip icon
 )
 
-// Component displays the Claude model information
+// Component displays the Claude model information.
 type Component struct {
 	priority int
 }
 
-// New creates a new model component
+// New creates a new model component.
 func New(priority int) *Component {
 	return &Component{priority: priority}
 }
 
-// Name returns the component name
+// Name returns the component name.
 func (c *Component) Name() string {
 	return "model"
 }
 
-// Render generates the model display string
+// Render generates the model display string.
 func (c *Component) Render(ctx *core.RenderContext) string {
 	sessionInfo, ok := sessioninfo.GetSessionInfo(ctx)
 	if !ok || sessionInfo.Model.DisplayName == "" {
@@ -44,17 +44,17 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 	return format.Colorize(color, fmt.Sprintf("%s %s", iconModel, modelName))
 }
 
-// Enabled checks if the component should be rendered
+// Enabled checks if the component should be rendered.
 func (c *Component) Enabled(config *core.Config) bool {
 	return config.GetBool("components.model.enabled", true)
 }
 
-// Priority returns the component priority
+// Priority returns the component priority.
 func (c *Component) Priority() int {
 	return c.priority
 }
 
-// extractModelName extracts the short model name from display name
+// extractModelName extracts the short model name from display name.
 func (c *Component) extractModelName(displayName string) string {
 	switch {
 	case strings.Contains(displayName, "Opus"):
@@ -72,7 +72,7 @@ func (c *Component) extractModelName(displayName string) string {
 	}
 }
 
-// getModelColor returns the appropriate color for the model
+// getModelColor returns the appropriate color for the model.
 func (c *Component) getModelColor(displayName string) format.Color {
 	switch {
 	case strings.Contains(displayName, "Opus"):

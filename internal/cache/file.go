@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// FileCache implements file-based caching with session isolation
+// FileCache implements file-based caching with session isolation.
 type FileCache struct {
 	baseDir   string
 	sessionID string
@@ -18,14 +18,14 @@ type FileCache struct {
 	mu        sync.RWMutex
 }
 
-// CacheEntry represents a cached item
+// CacheEntry represents a cached item.
 type CacheEntry struct {
 	Data      json.RawMessage `json:"data"`
 	ExpiresAt time.Time       `json:"expires_at"`
 	CachedAt  time.Time       `json:"cached_at"`
 }
 
-// CacheFile represents the structure of the cache file
+// CacheFile represents the structure of the cache file.
 type CacheFile struct {
 	SessionID   string                 `json:"session_id"`
 	LastUpdated time.Time              `json:"last_updated"`
@@ -33,7 +33,7 @@ type CacheFile struct {
 	Version     string                 `json:"version"`
 }
 
-// NewFileCache creates a new file cache with session isolation
+// NewFileCache creates a new file cache with session isolation.
 func NewFileCache(baseDir, sessionID string) *FileCache {
 	// Ensure cache directory exists
 	os.MkdirAll(baseDir, 0755)
@@ -50,7 +50,7 @@ func NewFileCache(baseDir, sessionID string) *FileCache {
 	return fc
 }
 
-// Load reads the entire cache file into memory
+// Load reads the entire cache file into memory.
 func (fc *FileCache) Load() error {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
@@ -88,7 +88,7 @@ func (fc *FileCache) Load() error {
 	return nil
 }
 
-// Save writes all cache entries to disk
+// Save writes all cache entries to disk.
 func (fc *FileCache) Save() error {
 	fc.mu.RLock()
 	defer fc.mu.RUnlock()
@@ -135,7 +135,7 @@ func (fc *FileCache) Save() error {
 	return nil
 }
 
-// Get retrieves cached data from in-memory cache
+// Get retrieves cached data from in-memory cache.
 func (fc *FileCache) Get(key string) (interface{}, bool) {
 	fc.mu.RLock()
 	defer fc.mu.RUnlock()
@@ -154,7 +154,7 @@ func (fc *FileCache) Get(key string) (interface{}, bool) {
 	return entry.Data, true
 }
 
-// Set stores data in in-memory cache
+// Set stores data in in-memory cache.
 func (fc *FileCache) Set(key string, value interface{}, ttl time.Duration) error {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
@@ -175,7 +175,7 @@ func (fc *FileCache) Set(key string, value interface{}, ttl time.Duration) error
 	return nil
 }
 
-// Delete removes cached data
+// Delete removes cached data.
 func (fc *FileCache) Delete(key string) error {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
@@ -188,7 +188,7 @@ func (fc *FileCache) Delete(key string) error {
 	return nil
 }
 
-// Cleanup removes old cache files (older than 24 hours)
+// Cleanup removes old cache files (older than 24 hours).
 func (fc *FileCache) Cleanup() error {
 	pattern := filepath.Join(fc.baseDir, "ccstatus_*.json")
 	files, err := filepath.Glob(pattern)
@@ -219,7 +219,7 @@ func (fc *FileCache) Cleanup() error {
 	return nil
 }
 
-// getCachePath generates the cache file path for this session
+// getCachePath generates the cache file path for this session.
 func (fc *FileCache) getCachePath() string {
 	// Use session ID in filename for easy identification
 	filename := fmt.Sprintf("ccstatus_%s.json", fc.sessionID)

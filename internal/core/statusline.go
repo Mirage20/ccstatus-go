@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-// StatusLine orchestrates providers and components
+// StatusLine orchestrates providers and components.
 type StatusLine struct {
 	providers  []Provider
 	components []Component
@@ -15,7 +15,7 @@ type StatusLine struct {
 	config     *Config
 }
 
-// NewStatusLine creates a new status line
+// NewStatusLine creates a new status line.
 func NewStatusLine(config *Config, cache Cache) *StatusLine {
 	return &StatusLine{
 		config: config,
@@ -23,17 +23,17 @@ func NewStatusLine(config *Config, cache Cache) *StatusLine {
 	}
 }
 
-// AddProvider registers a provider
+// AddProvider registers a provider.
 func (sl *StatusLine) AddProvider(p Provider) {
 	sl.providers = append(sl.providers, p)
 }
 
-// AddComponent registers a component
+// AddComponent registers a component.
 func (sl *StatusLine) AddComponent(c Component) {
 	sl.components = append(sl.components, c)
 }
 
-// Render generates the complete status line
+// Render generates the complete status line.
 func (sl *StatusLine) Render(ctx context.Context) string {
 	// Create render context
 	renderCtx := NewRenderContext(sl.config)
@@ -70,7 +70,7 @@ func (sl *StatusLine) Render(ctx context.Context) string {
 	return strings.Join(outputs, separator)
 }
 
-// gatherData fetches data from all providers in parallel
+// gatherData fetches data from all providers in parallel.
 func (sl *StatusLine) gatherData(ctx context.Context, renderCtx *RenderContext) {
 	var wg sync.WaitGroup
 

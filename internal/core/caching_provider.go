@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-// CachingProvider wraps any provider with caching behavior
+// CachingProvider wraps any provider with caching behavior.
 type CachingProvider struct {
 	provider Provider
 	cache    Cache
 	ttl      time.Duration
 }
 
-// NewCachingProvider creates a new caching wrapper for a provider
+// NewCachingProvider creates a new caching wrapper for a provider.
 func NewCachingProvider(p Provider, cache Cache, ttl time.Duration) *CachingProvider {
 	return &CachingProvider{
 		provider: p,
@@ -21,12 +21,12 @@ func NewCachingProvider(p Provider, cache Cache, ttl time.Duration) *CachingProv
 	}
 }
 
-// Key returns the underlying provider's key
+// Key returns the underlying provider's key.
 func (cp *CachingProvider) Key() ProviderKey {
 	return cp.provider.Key()
 }
 
-// Provide fetches data from cache or underlying provider
+// Provide fetches data from cache or underlying provider.
 func (cp *CachingProvider) Provide(ctx context.Context) (interface{}, error) {
 	cacheKey := string(cp.provider.Key())
 

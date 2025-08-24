@@ -1,6 +1,9 @@
 package format
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // FormatWithUnit formats a number with k/M/B suffixes
 // Examples:
@@ -17,11 +20,11 @@ func FormatWithUnit(value int64) string {
 	case value >= 1000:
 		return fmt.Sprintf("%dk", value/1000)
 	default:
-		return fmt.Sprintf("%d", value)
+		return strconv.FormatInt(value, 10)
 	}
 }
 
-// FormatPercentage formats a percentage value
+// FormatPercentage formats a percentage value.
 func FormatPercentage(value float64) string {
 	return fmt.Sprintf("%.0f%%", value)
 }

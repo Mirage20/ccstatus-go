@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// RenderContext holds all data and utilities for rendering
+// RenderContext holds all data and utilities for rendering.
 type RenderContext struct {
 	data   map[ProviderKey]interface{}
 	errors map[ProviderKey]error
@@ -13,7 +13,7 @@ type RenderContext struct {
 	mu     sync.RWMutex
 }
 
-// NewRenderContext creates a new render context
+// NewRenderContext creates a new render context.
 func NewRenderContext(config *Config) *RenderContext {
 	return &RenderContext{
 		data:   make(map[ProviderKey]interface{}),
@@ -22,7 +22,7 @@ func NewRenderContext(config *Config) *RenderContext {
 	}
 }
 
-// Get retrieves typed data from a provider (generic function)
+// Get retrieves typed data from a provider (generic function).
 func Get[T any](ctx *RenderContext, key ProviderKey) (T, bool) {
 	ctx.mu.RLock()
 	defer ctx.mu.RUnlock()
@@ -49,21 +49,21 @@ func Get[T any](ctx *RenderContext, key ProviderKey) (T, bool) {
 	return zero, false
 }
 
-// Set stores provider data
+// Set stores provider data.
 func (ctx *RenderContext) Set(key ProviderKey, data interface{}) {
 	ctx.mu.Lock()
 	defer ctx.mu.Unlock()
 	ctx.data[key] = data
 }
 
-// SetError stores provider error
+// SetError stores provider error.
 func (ctx *RenderContext) SetError(key ProviderKey, err error) {
 	ctx.mu.Lock()
 	defer ctx.mu.Unlock()
 	ctx.errors[key] = err
 }
 
-// GetError retrieves provider error
+// GetError retrieves provider error.
 func (ctx *RenderContext) GetError(key ProviderKey) (error, bool) {
 	ctx.mu.RLock()
 	defer ctx.mu.RUnlock()
@@ -71,7 +71,7 @@ func (ctx *RenderContext) GetError(key ProviderKey) (error, bool) {
 	return err, exists
 }
 
-// Config returns the configuration
+// Config returns the configuration.
 func (ctx *RenderContext) Config() *Config {
 	return ctx.config
 }

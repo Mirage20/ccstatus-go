@@ -2,7 +2,7 @@ package core
 
 import "time"
 
-// Cache provides caching functionality
+// Cache provides caching functionality.
 type Cache interface {
 	// Get retrieves cached data
 	Get(key string) (interface{}, bool)

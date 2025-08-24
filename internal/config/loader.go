@@ -1,12 +1,13 @@
 package config
 
 import (
-	"github.com/mirage20/ccstatus-go/internal/core"
 	"os"
 	"path/filepath"
+
+	"github.com/mirage20/ccstatus-go/internal/core"
 )
 
-// Load loads configuration from various sources
+// Load loads configuration from various sources.
 func Load() (*core.Config, error) {
 	config := core.NewConfig()
 
@@ -19,14 +20,14 @@ func Load() (*core.Config, error) {
 	return config, nil
 }
 
-// Default returns a configuration with default values
+// Default returns a configuration with default values.
 func Default() *core.Config {
 	config := core.NewConfig()
 	setDefaults(config)
 	return config
 }
 
-// setDefaults sets default configuration values
+// setDefaults sets default configuration values.
 func setDefaults(config *core.Config) {
 	// Display settings
 	config.Set("display.separator", " | ")
@@ -46,7 +47,7 @@ func setDefaults(config *core.Config) {
 	config.Set("cache.dir", getCacheDir())
 }
 
-// loadFromEnv loads configuration from environment variables
+// loadFromEnv loads configuration from environment variables.
 func loadFromEnv(config *core.Config) {
 	// Example: override cache directory from env
 	if cacheDir := os.Getenv("CCSTATUS_CACHE_DIR"); cacheDir != "" {
@@ -59,7 +60,7 @@ func loadFromEnv(config *core.Config) {
 	}
 }
 
-// getCacheDir returns the cache directory path
+// getCacheDir returns the cache directory path.
 func getCacheDir() string {
 	// Priority order:
 	// 1. Session-specific cache (if available)
