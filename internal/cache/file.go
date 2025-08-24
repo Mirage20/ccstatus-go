@@ -150,7 +150,7 @@ func (fc *FileCache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// Return raw JSON for the caller to unmarshal
+	// Return the data - could be json.RawMessage (from disk) or actual type (from Set)
 	return entry.Data, true
 }
 

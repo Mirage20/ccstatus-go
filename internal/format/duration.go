@@ -4,11 +4,12 @@ import "fmt"
 
 // FormatDuration formats minutes into a human-readable duration
 // Examples:
-//   45  -> "45m"
-//   90  -> "1h30m"
-//   120 -> "2h"
-//   0   -> "expired"
-//   -5  -> "expired"
+//
+//	45  -> "45m"
+//	90  -> "1h30m"
+//	120 -> "2h"
+//	0   -> "expired"
+//	-5  -> "expired"
 func FormatDuration(minutes int) string {
 	if minutes <= 0 {
 		return "expired"

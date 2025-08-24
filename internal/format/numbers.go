@@ -4,9 +4,10 @@ import "fmt"
 
 // FormatWithUnit formats a number with k/M/B suffixes
 // Examples:
-//   1234567 -> "1.2M"
-//   45678   -> "46k"
-//   789     -> "789"
+//
+//	1234567 -> "1.2M"
+//	45678   -> "46k"
+//	789     -> "789"
 func FormatWithUnit(value int64) string {
 	switch {
 	case value >= 1000000000:

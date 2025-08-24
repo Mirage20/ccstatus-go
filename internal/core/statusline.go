@@ -79,15 +79,7 @@ func (sl *StatusLine) gatherData(ctx context.Context, renderCtx *RenderContext) 
 		go func(p Provider) {
 			defer wg.Done()
 
-			// Apply caching if provider supports it
-			if cacheable, ok := p.(CacheableProvider); ok && sl.cache != nil {
-				if cached, found := sl.cache.Get(cacheable.CacheKey()); found {
-					renderCtx.Set(p.Key(), cached)
-					return
-				}
-			}
-
-			// Fetch fresh data
+			// Just call Provide - caching is handled by CachingProvider if wrapped
 			data, err := p.Provide(ctx)
 			if err != nil {
 				renderCtx.SetError(p.Key(), err)
@@ -95,11 +87,6 @@ func (sl *StatusLine) gatherData(ctx context.Context, renderCtx *RenderContext) 
 			}
 
 			renderCtx.Set(p.Key(), data)
-
-			// Cache if supported
-			if cacheable, ok := p.(CacheableProvider); ok && sl.cache != nil {
-				go sl.cache.Set(cacheable.CacheKey(), data, cacheable.CacheTTL())
-			}
 		}(provider)
 	}
 

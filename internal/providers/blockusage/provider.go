@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"os/exec"
-	"time"
 
 	"github.com/mirage20/ccstatus-go/internal/core"
 )
@@ -28,16 +27,6 @@ func (p *Provider) Key() core.ProviderKey {
 func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	usage := p.getActiveBlockUsage()
 	return usage, nil
-}
-
-// CacheTTL returns how long to cache this provider's data
-func (p *Provider) CacheTTL() time.Duration {
-	return 5 * time.Second // Cache for 5 seconds
-}
-
-// CacheKey returns a unique cache key
-func (p *Provider) CacheKey() string {
-	return "blockusage:blocks"
 }
 
 // getActiveBlockUsage executes ccusage command and parses the result

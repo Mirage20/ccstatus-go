@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/mirage20/ccstatus-go/internal/cache"
 	blockusageComponent "github.com/mirage20/ccstatus-go/internal/components/blockusage"
@@ -86,8 +87,15 @@ func run() error {
 	// Token usage provider - reads transcript file
 	statusLine.AddProvider(tokenusage.NewProvider(claudeSession))
 
-	// Block usage provider - executes ccusage command
-	statusLine.AddProvider(blockusageProvider.NewProvider())
+	// Block usage provider - executes ccusage command (with caching)
+	blockProvider := blockusageProvider.NewProvider()
+	if c != nil {
+		// Wrap with caching - 5 seconds TTL for block usage
+		cachedBlockProvider := core.NewCachingProvider(blockProvider, c, 10*time.Second)
+		statusLine.AddProvider(cachedBlockProvider)
+	} else {
+		statusLine.AddProvider(blockProvider)
+	}
 
 	// TODO: Add git provider when implemented
 	// if cfg.GetBool("providers.git.enabled", false) && claudeSession.CWD != "" {
