@@ -1,9 +1,6 @@
 package core
 
-import (
-	"encoding/json"
-	"sync"
-)
+import "sync"
 
 // RenderContext holds all data and utilities for rendering.
 type RenderContext struct {
@@ -33,20 +30,9 @@ func Get[T any](ctx *RenderContext, key ProviderKey) (T, bool) {
 		return zero, false
 	}
 
-	// Try direct type assertion first
-	if typed, ok := value.(T); ok {
-		return typed, true
-	}
-
-	// Handle json.RawMessage from disk cache
-	if raw, ok := value.(json.RawMessage); ok {
-		var result T
-		if err := json.Unmarshal(raw, &result); err == nil {
-			return result, true
-		}
-	}
-
-	return zero, false
+	// Simple type assertion - cache now handles unmarshaling
+	typed, ok := value.(T)
+	return typed, ok
 }
 
 // Set stores provider data.

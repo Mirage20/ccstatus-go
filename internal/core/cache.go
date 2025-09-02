@@ -5,11 +5,11 @@ import "time"
 // Cache provides caching functionality.
 type Cache interface {
 	// Get retrieves cached data
-	Get(key string) (interface{}, bool)
+	Get(key ProviderKey) (interface{}, bool)
 
 	// Set stores data in cache
-	Set(key string, value interface{}, ttl time.Duration) error
+	Set(key ProviderKey, value interface{}, ttl time.Duration) error
 
 	// Delete removes cached data
-	Delete(key string) error
+	Delete(key ProviderKey) error
 }

@@ -7,15 +7,18 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/mirage20/ccstatus-go/internal/core"
 )
 
 // FileCache implements file-based caching with session isolation.
 type FileCache struct {
-	baseDir   string
-	sessionID string
-	entries   map[string]*CacheEntry
-	dirty     bool
-	mu        sync.RWMutex
+	baseDir      string
+	sessionID    string
+	entries      map[string]*CacheEntry
+	dirty        bool
+	mu           sync.RWMutex
+	typeRegistry *core.TypeRegistry
 }
 
 // CacheEntry represents a cached item.
@@ -34,14 +37,15 @@ type CacheFile struct {
 }
 
 // NewFileCache creates a new file cache with session isolation.
-func NewFileCache(baseDir, sessionID string) *FileCache {
+func NewFileCache(baseDir, sessionID string, typeRegistry *core.TypeRegistry) *FileCache {
 	// Ensure cache directory exists
 	os.MkdirAll(baseDir, 0755)
 
 	fc := &FileCache{
-		baseDir:   baseDir,
-		sessionID: sessionID,
-		entries:   make(map[string]*CacheEntry),
+		baseDir:      baseDir,
+		sessionID:    sessionID,
+		entries:      make(map[string]*CacheEntry),
+		typeRegistry: typeRegistry,
 	}
 
 	// Load existing cache if available
@@ -136,11 +140,11 @@ func (fc *FileCache) Save() error {
 }
 
 // Get retrieves cached data from in-memory cache.
-func (fc *FileCache) Get(key string) (interface{}, bool) {
+func (fc *FileCache) Get(key core.ProviderKey) (interface{}, bool) {
 	fc.mu.RLock()
 	defer fc.mu.RUnlock()
 
-	entry, exists := fc.entries[key]
+	entry, exists := fc.entries[string(key)]
 	if !exists {
 		return nil, false
 	}
@@ -150,12 +154,28 @@ func (fc *FileCache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// Return the data - could be json.RawMessage (from disk) or actual type (from Set)
-	return entry.Data, true
+	// Unmarshal using type registry
+	if fc.typeRegistry == nil {
+		// No type registry provided
+		return nil, false
+	}
+
+	instance, ok := fc.typeRegistry.CreateInstance(key)
+	if !ok {
+		// Type not registered - this is a configuration error
+		return nil, false
+	}
+
+	if err := json.Unmarshal(entry.Data, instance); err != nil {
+		// Corrupted cache entry
+		return nil, false
+	}
+
+	return instance, true
 }
 
 // Set stores data in in-memory cache.
-func (fc *FileCache) Set(key string, value interface{}, ttl time.Duration) error {
+func (fc *FileCache) Set(key core.ProviderKey, value interface{}, ttl time.Duration) error {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 
@@ -165,7 +185,7 @@ func (fc *FileCache) Set(key string, value interface{}, ttl time.Duration) error
 		return err
 	}
 
-	fc.entries[key] = &CacheEntry{
+	fc.entries[string(key)] = &CacheEntry{
 		Data:      valueData,
 		ExpiresAt: time.Now().Add(ttl),
 		CachedAt:  time.Now(),
@@ -176,12 +196,13 @@ func (fc *FileCache) Set(key string, value interface{}, ttl time.Duration) error
 }
 
 // Delete removes cached data.
-func (fc *FileCache) Delete(key string) error {
+func (fc *FileCache) Delete(key core.ProviderKey) error {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()
 
-	if _, exists := fc.entries[key]; exists {
-		delete(fc.entries, key)
+	keyStr := string(key)
+	if _, exists := fc.entries[keyStr]; exists {
+		delete(fc.entries, keyStr)
 		fc.dirty = true
 	}
 

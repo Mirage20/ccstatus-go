@@ -1,6 +1,10 @@
 package cache
 
-import "time"
+import (
+	"time"
+
+	"github.com/mirage20/ccstatus-go/internal/core"
+)
 
 // NullCache is a no-op cache implementation.
 type NullCache struct{}
@@ -11,16 +15,16 @@ func NewNullCache() *NullCache {
 }
 
 // Get always returns false (cache miss).
-func (c *NullCache) Get(key string) (interface{}, bool) {
+func (c *NullCache) Get(key core.ProviderKey) (interface{}, bool) {
 	return nil, false
 }
 
 // Set does nothing.
-func (c *NullCache) Set(key string, value interface{}, ttl time.Duration) error {
+func (c *NullCache) Set(key core.ProviderKey, value interface{}, ttl time.Duration) error {
 	return nil
 }
 
 // Delete does nothing.
-func (c *NullCache) Delete(key string) error {
+func (c *NullCache) Delete(key core.ProviderKey) error {
 	return nil
 }

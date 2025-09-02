@@ -28,7 +28,7 @@ func (cp *CachingProvider) Key() ProviderKey {
 
 // Provide fetches data from cache or underlying provider.
 func (cp *CachingProvider) Provide(ctx context.Context) (interface{}, error) {
-	cacheKey := string(cp.provider.Key())
+	cacheKey := cp.provider.Key()
 
 	// Try cache first
 	if cp.cache != nil {

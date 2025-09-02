@@ -61,12 +61,24 @@ func run() error {
 		cfg = config.Default()
 	}
 
+	// Create type registry for cache unmarshaling
+	typeRegistry := core.NewTypeRegistry()
+	typeRegistry.Register("sessioninfo", func() interface{} {
+		return &sessioninfo.SessionInfo{}
+	})
+	typeRegistry.Register("tokenusage", func() interface{} {
+		return &tokenusage.TokenUsage{}
+	})
+	typeRegistry.Register("blockusage", func() interface{} {
+		return &blockusageProvider.BlockUsage{}
+	})
+
 	// Create cache with session isolation
 	var c core.Cache
 	var fc *cache.FileCache
 	if cfg.GetBool("cache.enabled", true) {
 		cacheDir := cfg.GetString("cache.dir", os.TempDir())
-		fc = cache.NewFileCache(cacheDir, claudeSession.SessionID)
+		fc = cache.NewFileCache(cacheDir, claudeSession.SessionID, typeRegistry)
 		c = fc
 
 		// Cleanup old cache files occasionally (10% chance)
