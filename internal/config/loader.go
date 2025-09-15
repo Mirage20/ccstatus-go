@@ -4,80 +4,86 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mirage20/ccstatus-go/internal/core"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 )
 
-// Load loads configuration from various sources.
-func Load() (*core.Config, error) {
-	config := core.NewConfig()
-
-	// Set default values
-	setDefaults(config)
-
-	// Load from environment variables (if any)
-	loadFromEnv(config)
-
-	return config, nil
+// Reader provides access to configuration values.
+type Reader struct {
+	k *koanf.Koanf
 }
 
-// Default returns a configuration with default values.
-func Default() *core.Config {
-	config := core.NewConfig()
-	setDefaults(config)
-	return config
+// NewReader creates a new configuration reader.
+func NewReader(projectDir string) *Reader {
+	k := koanf.New(".")
+
+	// Load user config file if it exists
+	configPath := findConfigFile(projectDir)
+	if configPath != "" {
+		// Try to load config, but continue with defaults if it fails
+		_ = k.Load(file.Provider(configPath), yaml.Parser())
+	}
+
+	return &Reader{k: k}
 }
 
-// setDefaults sets default configuration values.
-func setDefaults(config *core.Config) {
-	// Display settings
-	config.Set("display.separator", " | ")
+// findConfigFile searches for config file in order of preference.
+func findConfigFile(projectDir string) string {
+	// Project-specific configs (using project dir from Claude session)
+	if projectDir != "" {
+		// Check for local config first (highest priority)
+		localConfig := filepath.Join(projectDir, ".claude", "ccstatus.local.yaml")
+		if fileExists(localConfig) {
+			return localConfig
+		}
 
-	// Component settings
-	config.Set("components.model.enabled", true)
-	config.Set("components.tokens.enabled", true)
-	config.Set("components.tokens.context_limit", int64(200000))
-	config.Set("components.blockusage.enabled", true)
-	config.Set("components.git.enabled", false)
+		// Check for shared project config
+		projectConfig := filepath.Join(projectDir, ".claude", "ccstatus.yaml")
+		if fileExists(projectConfig) {
+			return projectConfig
+		}
+	}
 
-	// Provider settings
-	config.Set("providers.git.enabled", false)
+	// User default fallback
+	if home, err := os.UserHomeDir(); err == nil {
+		userConfig := filepath.Join(home, ".claude", "ccstatus.yaml")
+		if fileExists(userConfig) {
+			return userConfig
+		}
+	}
 
-	// Cache settings
-	config.Set("cache.enabled", true)
-	config.Set("cache.dir", getCacheDir())
+	return ""
 }
 
-// loadFromEnv loads configuration from environment variables.
-func loadFromEnv(config *core.Config) {
-	// Example: override cache directory from env
-	if cacheDir := os.Getenv("CCSTATUS_CACHE_DIR"); cacheDir != "" {
-		config.Set("cache.dir", cacheDir)
+// fileExists checks if a file exists and is readable.
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
 	}
-
-	// Example: disable cache from env
-	if os.Getenv("CCSTATUS_NO_CACHE") == "1" {
-		config.Set("cache.enabled", false)
-	}
+	return !info.IsDir()
 }
 
-// getCacheDir returns the cache directory path.
-func getCacheDir() string {
-	// Priority order:
-	// 1. Session-specific cache (if available)
-	if sessionID := os.Getenv("CLAUDE_SESSION_ID"); sessionID != "" {
-		return filepath.Join(os.TempDir(), "ccstatus", sessionID)
+// Get retrieves configuration at the specified path, returning defaultValue if not found.
+func Get[T any](r *Reader, path string, defaultValue T) T {
+	if r.k == nil || path == "" || !r.k.Exists(path) {
+		return defaultValue
 	}
 
-	// 2. User cache directory
-	if cacheHome := os.Getenv("XDG_CACHE_HOME"); cacheHome != "" {
-		return filepath.Join(cacheHome, "ccstatus")
-	}
+	result := defaultValue
+	_ = r.k.UnmarshalWithConf(path, &result, koanf.UnmarshalConf{Tag: "yaml"})
+	return result
+}
 
-	// 3. Home directory cache
-	if home := os.Getenv("HOME"); home != "" {
-		return filepath.Join(home, ".cache", "ccstatus")
-	}
+// GetComponent retrieves configuration for a specific component.
+func GetComponent[T any](r *Reader, componentName string, defaultValue T) T {
+	path := "components." + componentName
+	return Get(r, path, defaultValue)
+}
 
-	// 4. Fallback to temp
-	return filepath.Join(os.TempDir(), "ccstatus", "global")
+// GetProvider retrieves configuration for a specific provider.
+func GetProvider[T any](r *Reader, providerName string, defaultValue T) T {
+	path := "providers." + providerName
+	return Get(r, path, defaultValue)
 }

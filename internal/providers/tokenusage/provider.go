@@ -7,19 +7,30 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
 )
+
+func init() {
+	// Self-register with type factory
+	core.RegisterProvider(string(Key), New, func() interface{} {
+		return &TokenUsage{}
+	})
+}
 
 // Provider provides token usage by reading from transcript file.
 type Provider struct {
 	transcriptPath string
 }
 
-// NewProvider creates a new token usage provider.
-func NewProvider(session *core.ClaudeSession) *Provider {
+// New creates a new token usage provider with config.
+func New(cfgReader *config.Reader, session *core.ClaudeSession) (core.Provider, core.CacheConfig) {
+	// Load provider config with defaults
+	cfg := config.GetProvider(cfgReader, "tokenusage", defaultConfig())
+
 	return &Provider{
 		transcriptPath: session.TranscriptPath,
-	}
+	}, cfg.Cache
 }
 
 // Key returns the unique identifier for this provider.
@@ -28,7 +39,7 @@ func (p *Provider) Key() core.ProviderKey {
 }
 
 // Provide reads and returns token usage from transcript.
-func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
+func (p *Provider) Provide(_ context.Context) (interface{}, error) {
 	if p.transcriptPath == "" {
 		return &TokenUsage{}, nil
 	}
@@ -71,7 +82,7 @@ func (p *Provider) readTranscript() *TokenUsage {
 	// Process from the end of the file
 	for i := len(lines) - 1; i >= 0; i-- {
 		var entry TranscriptEntry
-		if err := json.Unmarshal([]byte(lines[i]), &entry); err != nil {
+		if err = json.Unmarshal([]byte(lines[i]), &entry); err != nil {
 			// Skip invalid JSON lines
 			continue
 		}
@@ -118,10 +129,10 @@ type Usage struct {
 
 // TokenUsage represents token consumption.
 type TokenUsage struct {
-	InputTokens              int64
-	OutputTokens             int64
-	CacheCreationInputTokens int64
-	CacheReadInputTokens     int64
+	InputTokens              int64 `json:"input_tokens"`
+	OutputTokens             int64 `json:"output_tokens"`
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens"`
+	CacheReadInputTokens     int64 `json:"cache_read_input_tokens"`
 }
 
 // Total returns total token count.

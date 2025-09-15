@@ -7,20 +7,24 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/mirage20/ccstatus-go/internal/cache"
-	"github.com/mirage20/ccstatus-go/internal/components/ccusage/activeblock"
-	"github.com/mirage20/ccstatus-go/internal/components/claudecode/changes"
-	cccontext "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
-	"github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
-	"github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
-	"github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
 	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
-	blockusageProvider "github.com/mirage20/ccstatus-go/internal/providers/blockusage"
-	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
-	"github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
+
+	// Import providers for self-registration.
+	_ "github.com/mirage20/ccstatus-go/internal/providers/blockusage"
+	_ "github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
+	_ "github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
+
+	// Import components for self-registration.
+	_ "github.com/mirage20/ccstatus-go/internal/components/ccusage/activeblocktime"
+	_ "github.com/mirage20/ccstatus-go/internal/components/ccusage/activeblockusage"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/changes"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
 )
 
 func main() {
@@ -31,7 +35,7 @@ func main() {
 			showHelp()
 			return
 		case "version", "-v", "--version":
-			fmt.Println("ccstatus-go v0.1.0")
+			fmt.Fprintln(os.Stdout, "ccstatus-go v0.1.0")
 			return
 		}
 	}
@@ -54,91 +58,65 @@ func run() error {
 		return nil
 	}
 
-	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		// Continue with defaults if config loading fails
-		cfg = config.Default()
+	// Load configuration with project directory from Claude session
+	cfgReader := config.NewReader(claudeSession.Workspace.ProjectDir)
+
+	// Create cache with session isolation using the new factory
+	c := cache.New(cfgReader, claudeSession.SessionID)
+	defer c.Close() // Ignore errors - don't pollute status line output
+
+	// Create status line with configuration
+	statusLine := core.NewStatusLine(cfgReader)
+
+	// STEP 1: Get active components from config or use defaults
+	componentNames := config.Get(cfgReader, "active", []string{})
+	if len(componentNames) == 0 {
+		// Default component order if no active list is configured
+		componentNames = []string{
+			"model",
+			"context",
+			"activeblockusage",
+			"activeblocktime",
+			"changes",
+			"duration",
+			"version",
+		}
 	}
 
-	// Create type registry for cache unmarshaling
-	typeRegistry := core.NewTypeRegistry()
-	typeRegistry.Register("sessioninfo", func() interface{} {
-		return &sessioninfo.SessionInfo{}
-	})
-	typeRegistry.Register("tokenusage", func() interface{} {
-		return &tokenusage.TokenUsage{}
-	})
-	typeRegistry.Register("blockusage", func() interface{} {
-		return &blockusageProvider.BlockUsage{}
-	})
+	// Create components and collect their provider requirements
+	var components []core.Component
+	providerSet := make(map[string]bool)
 
-	// Create cache with session isolation
-	var c core.Cache
-	var fc *cache.FileCache
-	if cfg.GetBool("cache.enabled", true) {
-		cacheDir := cfg.GetString("cache.dir", os.TempDir())
-		fc = cache.NewFileCache(cacheDir, claudeSession.SessionID, typeRegistry)
-		c = fc
+	for _, name := range componentNames {
+		if comp, exists := core.CreateComponent(name, cfgReader); exists {
+			components = append(components, comp)
 
-		// Cleanup old cache files occasionally (10% chance)
-		if len(os.Args) > 0 && os.Args[0] != "" {
-			// Simple random: use last byte of session ID
-			if len(claudeSession.SessionID) > 0 && claudeSession.SessionID[len(claudeSession.SessionID)-1]%10 == 0 {
-				fc.Cleanup()
+			// Collect provider dependencies
+			for _, providerName := range comp.RequiredProviders() {
+				providerSet[providerName] = true
 			}
 		}
-	} else {
-		c = cache.NewNullCache()
 	}
 
-	// Create status line
-	statusLine := core.NewStatusLine(cfg, c)
-
-	// Add providers - each provider gets only what it needs from Claude session
-
-	// Session info provider - provides model and session information
-	statusLine.AddProvider(sessioninfo.NewProvider(claudeSession))
-
-	// Token usage provider - reads transcript file
-	statusLine.AddProvider(tokenusage.NewProvider(claudeSession))
-
-	// Block usage provider - executes ccusage command (with caching)
-	blockProvider := blockusageProvider.NewProvider()
-	if c != nil {
-		// Wrap with caching - 5 seconds TTL for block usage
-		cachedBlockProvider := core.NewCachingProvider(blockProvider, c, 10*time.Second)
-		statusLine.AddProvider(cachedBlockProvider)
-	} else {
-		statusLine.AddProvider(blockProvider)
+	// STEP 2: Create only the providers that components need
+	for providerName := range providerSet {
+		// Create provider from registry (registry handles caching)
+		if provider, exists := core.CreateProvider(providerName, cfgReader, claudeSession, c); exists {
+			statusLine.AddProvider(provider)
+		} else {
+			// Log warning that a required provider is not registered
+			fmt.Fprintf(os.Stderr, "Warning: Component requires provider '%s' but it's not registered\n", providerName)
+		}
 	}
 
-	// TODO: Add git provider when implemented
-	// if cfg.GetBool("providers.git.enabled", false) && claudeSession.CWD != "" {
-	//     statusLine.AddProvider(git.NewProvider(claudeSession.CWD))
-	// }
-
-	// Add components using the component packages
-	statusLine.AddComponent(model.New(1))       // Priority 1: Model name
-	statusLine.AddComponent(cccontext.New(2))   // Priority 2: Context usage
-	statusLine.AddComponent(activeblock.New(3)) // Priority 3: Block usage
-	statusLine.AddComponent(changes.New(4))     // Priority 4: Lines changed
-	statusLine.AddComponent(duration.New(5))    // Priority 5: Session duration
-	statusLine.AddComponent(version.New(6))     // Priority 6: Claude version
-
-	// TODO: Add git component when implemented
-	// if cfg.GetBool("components.git.enabled", false) {
-	//     statusLine.AddComponent(git.New(4))
-	// }
+	// STEP 3: Add components to statusline
+	for _, comp := range components {
+		statusLine.AddComponent(comp)
+	}
 
 	// Render and output the status line
 	output := statusLine.Render(ctx)
-	fmt.Println(output)
-
-	// Save cache if using FileCache
-	if fc != nil {
-		fc.Save()
-	}
+	fmt.Fprintln(os.Stdout, output)
 
 	return nil
 }
@@ -157,14 +135,14 @@ func readClaudeSession(reader io.Reader) (*core.ClaudeSession, error) {
 }
 
 func showHelp() {
-	fmt.Println("ccstatus-go - Status line generator for Claude Code")
-	fmt.Println()
-	fmt.Println("Usage:")
-	fmt.Println("  ccstatus             Read from stdin and generate status line")
-	fmt.Println("  ccstatus help        Show this help message")
-	fmt.Println("  ccstatus version     Show version information")
-	fmt.Println()
-	fmt.Println("Expected JSON input format:")
+	fmt.Fprintln(os.Stdout, "ccstatus-go - Status line generator for Claude Code")
+	fmt.Fprintln(os.Stdout)
+	fmt.Fprintln(os.Stdout, "Usage:")
+	fmt.Fprintln(os.Stdout, "  ccstatus             Read from stdin and generate status line")
+	fmt.Fprintln(os.Stdout, "  ccstatus help        Show this help message")
+	fmt.Fprintln(os.Stdout, "  ccstatus version     Show version information")
+	fmt.Fprintln(os.Stdout)
+	fmt.Fprintln(os.Stdout, "Expected JSON input format:")
 	example := core.ClaudeSession{
 		SessionID:      "session-123",
 		TranscriptPath: "/path/to/transcript.json",
@@ -182,10 +160,5 @@ func showHelp() {
 
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("  ", "  ")
-	encoder.Encode(example)
-	fmt.Println()
-	fmt.Println("Environment variables:")
-	fmt.Println("  CCSTATUS_CACHE_DIR   Override cache directory")
-	fmt.Println("  CCSTATUS_NO_CACHE    Set to 1 to disable caching")
-	fmt.Println("  CLAUDE_SESSION_ID    Session-specific cache")
+	_ = encoder.Encode(example)
 }

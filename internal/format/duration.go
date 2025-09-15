@@ -2,17 +2,17 @@ package format
 
 import "fmt"
 
-// FormatDuration formats minutes into a human-readable duration
+// DurationMinutes formats minutes into a human-readable duration
 // Examples:
 //
 //	45  -> "45m"
 //	90  -> "1h30m"
 //	120 -> "2h"
-//	0   -> "expired"
-//	-5  -> "expired"
-func FormatDuration(minutes int) string {
+//	0   -> "0m"
+//	-5  -> "0m"
+func DurationMinutes(minutes int) string {
 	if minutes <= 0 {
-		return "expired"
+		return "0m"
 	}
 
 	if minutes < 60 {
@@ -27,14 +27,14 @@ func FormatDuration(minutes int) string {
 	return fmt.Sprintf("%dh%dm", hours, mins)
 }
 
-// Duration formats milliseconds into a human-readable duration
+// DurationMs formats milliseconds into a human-readable duration
 // Examples:
 //
 //	45000  -> "45s"
 //	90000  -> "1m30s"
 //	120000 -> "2m"
 //	3600000 -> "1h"
-func Duration(ms int64) string {
+func DurationMs(ms int64) string {
 	if ms <= 0 {
 		return "0s"
 	}

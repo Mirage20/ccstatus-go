@@ -1,5 +1,7 @@
 package format
 
+import "strings"
+
 // Color represents an ANSI color code.
 type Color string
 
@@ -20,17 +22,22 @@ func Colorize(color Color, text string) string {
 	return string(color) + text + string(ColorReset)
 }
 
-// Dimmed applies gray color for dimmed text.
-func Dimmed(text string) string {
-	return Colorize(ColorGray, text)
-}
+// ParseColor converts a color name string to a Color constant.
+// Returns ColorGray as default if the name is not recognized.
+func ParseColor(name string) Color {
+	colors := map[string]Color{
+		"red":     ColorRed,
+		"green":   ColorGreen,
+		"yellow":  ColorYellow,
+		"blue":    ColorBlue,
+		"magenta": ColorMagenta,
+		"cyan":    ColorCyan,
+		"gray":    ColorGray,
+		"grey":    ColorGray, // Alternative spelling
+	}
 
-// Green applies green color.
-func Green(text string) string {
-	return Colorize(ColorGreen, text)
-}
-
-// Red applies red color.
-func Red(text string) string {
-	return Colorize(ColorRed, text)
+	if color, ok := colors[strings.ToLower(name)]; ok {
+		return color
+	}
+	return ColorGray // Default to gray for unknown colors
 }

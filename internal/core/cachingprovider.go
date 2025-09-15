@@ -7,17 +7,19 @@ import (
 
 // CachingProvider wraps any provider with caching behavior.
 type CachingProvider struct {
-	provider Provider
-	cache    Cache
-	ttl      time.Duration
+	provider    Provider
+	cache       Cache
+	ttl         time.Duration
+	newInstance func() interface{} // Creates new instance for unmarshaling
 }
 
 // NewCachingProvider creates a new caching wrapper for a provider.
-func NewCachingProvider(p Provider, cache Cache, ttl time.Duration) *CachingProvider {
+func NewCachingProvider(p Provider, cache Cache, ttl time.Duration, newInstance func() interface{}) *CachingProvider {
 	return &CachingProvider{
-		provider: p,
-		cache:    cache,
-		ttl:      ttl,
+		provider:    p,
+		cache:       cache,
+		ttl:         ttl,
+		newInstance: newInstance,
 	}
 }
 
@@ -28,13 +30,16 @@ func (cp *CachingProvider) Key() ProviderKey {
 
 // Provide fetches data from cache or underlying provider.
 func (cp *CachingProvider) Provide(ctx context.Context) (interface{}, error) {
-	cacheKey := cp.provider.Key()
+	cacheKey := string(cp.provider.Key())
 
 	// Try cache first
-	if cp.cache != nil {
-		if cached, found := cp.cache.Get(cacheKey); found {
-			return cached, nil
+	if cp.cache != nil && cp.newInstance != nil {
+		instance := cp.newInstance()
+		found, err := cp.cache.Get(cacheKey, instance)
+		if found && err == nil {
+			return instance, nil
 		}
+		// If cache miss or error, fetch fresh data
 	}
 
 	// Fetch from underlying provider

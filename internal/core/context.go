@@ -6,16 +6,14 @@ import "sync"
 type RenderContext struct {
 	data   map[ProviderKey]interface{}
 	errors map[ProviderKey]error
-	config *Config
 	mu     sync.RWMutex
 }
 
 // NewRenderContext creates a new render context.
-func NewRenderContext(config *Config) *RenderContext {
+func NewRenderContext() *RenderContext {
 	return &RenderContext{
 		data:   make(map[ProviderKey]interface{}),
 		errors: make(map[ProviderKey]error),
-		config: config,
 	}
 }
 
@@ -50,14 +48,9 @@ func (ctx *RenderContext) SetError(key ProviderKey, err error) {
 }
 
 // GetError retrieves provider error.
-func (ctx *RenderContext) GetError(key ProviderKey) (error, bool) {
+func (ctx *RenderContext) GetError(key ProviderKey) (bool, error) {
 	ctx.mu.RLock()
 	defer ctx.mu.RUnlock()
 	err, exists := ctx.errors[key]
-	return err, exists
-}
-
-// Config returns the configuration.
-func (ctx *RenderContext) Config() *Config {
-	return ctx.config
+	return exists, err
 }

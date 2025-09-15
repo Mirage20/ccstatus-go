@@ -5,17 +5,28 @@ import (
 	"encoding/json"
 	"os/exec"
 
+	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
 )
+
+func init() {
+	// Self-register with type factory
+	core.RegisterProvider(string(Key), New, func() interface{} {
+		return &BlockUsage{}
+	})
+}
 
 // Provider provides block usage by executing ccusage command.
 type Provider struct {
 	// This provider doesn't need ClaudeSession!
 }
 
-// NewProvider creates a new block usage provider.
-func NewProvider() *Provider {
-	return &Provider{}
+// New creates a new block usage provider with config.
+func New(cfgReader *config.Reader, _ *core.ClaudeSession) (core.Provider, core.CacheConfig) {
+	// Load provider config with defaults
+	cfg := config.GetProvider(cfgReader, "blockusage", defaultConfig())
+
+	return &Provider{}, cfg.Cache
 }
 
 // Key returns the unique identifier for this provider.
@@ -25,12 +36,12 @@ func (p *Provider) Key() core.ProviderKey {
 
 // Provide executes ccusage and returns block usage data.
 func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
-	usage := p.getActiveBlockUsage()
+	usage := p.getActiveBlockUsage(ctx)
 	return usage, nil
 }
 
 // getActiveBlockUsage executes ccusage command and parses the result.
-func (p *Provider) getActiveBlockUsage() *BlockUsage {
+func (p *Provider) getActiveBlockUsage(ctx context.Context) *BlockUsage {
 	zeroBlockUsage := &BlockUsage{
 		InputTokens:              0,
 		OutputTokens:             0,
@@ -39,11 +50,11 @@ func (p *Provider) getActiveBlockUsage() *BlockUsage {
 		TotalTokens:              0,
 		RemainingMinutes:         0,
 		EndTime:                  "",
-		UsagePercentage:          0,
+		MaxBlockTokens:           0,
 	}
 
-	// Execute ccusage command
-	cmd := exec.Command("ccusage", "blocks", "-aj")
+	// Execute ccusage command (get all blocks in JSON format to calculate max)
+	cmd := exec.CommandContext(ctx, "ccusage", "blocks", "-j")
 	output, err := cmd.Output()
 	if err != nil {
 		// ccusage might not be installed or available
@@ -52,11 +63,11 @@ func (p *Provider) getActiveBlockUsage() *BlockUsage {
 
 	// Parse the JSON output
 	var data CCUsageOutput
-	if err := json.Unmarshal(output, &data); err != nil {
+	if err = json.Unmarshal(output, &data); err != nil {
 		return zeroBlockUsage
 	}
 
-	// Find the active block or use the first one
+	// Return zero if no blocks exist
 	if len(data.Blocks) == 0 {
 		return zeroBlockUsage
 	}
@@ -69,14 +80,23 @@ func (p *Provider) getActiveBlockUsage() *BlockUsage {
 		}
 	}
 
-	// If no active block, use the first one
+	// If no active block, return zero usage (we're in a gap or no session)
 	if activeBlock == nil {
-		activeBlock = &data.Blocks[0]
+		return zeroBlockUsage
 	}
 
-	// Calculate usage percentage (assuming 30M tokens per 5-hour block)
-	const maxBlockTokens = 30000000
-	usagePercentage := float64(activeBlock.TotalTokens) / float64(maxBlockTokens) * 100
+	// Calculate dynamic block limit from historical maximum
+	var maxBlockTokens int64
+	for _, block := range data.Blocks {
+		if !block.IsGap && block.TotalTokens > maxBlockTokens {
+			maxBlockTokens = block.TotalTokens
+		}
+	}
+
+	// If no historical data or all gaps, use a reasonable default
+	if maxBlockTokens == 0 {
+		maxBlockTokens = 1000000 // 1M tokens as fallback
+	}
 
 	return &BlockUsage{
 		InputTokens:              activeBlock.TokenCounts.InputTokens,
@@ -86,7 +106,7 @@ func (p *Provider) getActiveBlockUsage() *BlockUsage {
 		TotalTokens:              activeBlock.TotalTokens,
 		RemainingMinutes:         activeBlock.Projection.RemainingMinutes,
 		EndTime:                  activeBlock.EndTime,
-		UsagePercentage:          usagePercentage,
+		MaxBlockTokens:           maxBlockTokens,
 	}
 }
 
@@ -98,6 +118,7 @@ type CCUsageOutput struct {
 // Block represents a 5-hour usage block.
 type Block struct {
 	IsActive    bool        `json:"isActive"`
+	IsGap       bool        `json:"isGap"`
 	TotalTokens int64       `json:"totalTokens"`
 	TokenCounts TokenCounts `json:"tokenCounts"`
 	Projection  Projection  `json:"projection"`
@@ -119,14 +140,14 @@ type Projection struct {
 
 // BlockUsage represents 5-hour block usage.
 type BlockUsage struct {
-	InputTokens              int64
-	OutputTokens             int64
-	CacheCreationInputTokens int64
-	CacheReadInputTokens     int64
-	TotalTokens              int64
-	RemainingMinutes         int
-	EndTime                  string
-	UsagePercentage          float64
+	InputTokens              int64  `json:"input_tokens"`
+	OutputTokens             int64  `json:"output_tokens"`
+	CacheCreationInputTokens int64  `json:"cache_creation_input_tokens"`
+	CacheReadInputTokens     int64  `json:"cache_read_input_tokens"`
+	TotalTokens              int64  `json:"total_tokens"`
+	RemainingMinutes         int    `json:"remaining_minutes"`
+	EndTime                  string `json:"end_time"`
+	MaxBlockTokens           int64  `json:"max_block_tokens"`
 }
 
 // Key is the provider key.

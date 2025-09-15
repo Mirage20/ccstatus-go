@@ -5,13 +5,13 @@ import (
 	"strconv"
 )
 
-// FormatWithUnit formats a number with k/M/B suffixes
+// WithUnit formats a number with k/M/B suffixes
 // Examples:
 //
 //	1234567 -> "1.2M"
 //	45678   -> "46k"
 //	789     -> "789"
-func FormatWithUnit(value int64) string {
+func WithUnit(value int64) string {
 	switch {
 	case value >= 1000000000:
 		return fmt.Sprintf("%.1fB", float64(value)/1000000000)
@@ -22,9 +22,4 @@ func FormatWithUnit(value int64) string {
 	default:
 		return strconv.FormatInt(value, 10)
 	}
-}
-
-// FormatPercentage formats a percentage value.
-func FormatPercentage(value float64) string {
-	return fmt.Sprintf("%.0f%%", value)
 }

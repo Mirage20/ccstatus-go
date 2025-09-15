@@ -2,24 +2,36 @@ package core
 
 import (
 	"context"
-	"sort"
 	"strings"
 	"sync"
+
+	"github.com/mirage20/ccstatus-go/internal/config"
+	"github.com/mirage20/ccstatus-go/internal/format"
 )
+
+// SeparatorConfig defines configuration for the status line separator.
+type SeparatorConfig struct {
+	Symbol string `yaml:"symbol"`
+	Color  string `yaml:"color"`
+}
 
 // StatusLine orchestrates providers and components.
 type StatusLine struct {
 	providers  []Provider
 	components []Component
-	cache      Cache
-	config     *Config
+	separator  SeparatorConfig
 }
 
-// NewStatusLine creates a new status line.
-func NewStatusLine(config *Config, cache Cache) *StatusLine {
+// NewStatusLine creates a new status line with configuration.
+func NewStatusLine(cfgReader *config.Reader) *StatusLine {
+	// Load separator config with defaults
+	separator := config.Get(cfgReader, "separator", SeparatorConfig{
+		Symbol: " | ",
+		Color:  "gray",
+	})
+
 	return &StatusLine{
-		config: config,
-		cache:  cache,
+		separator: separator,
 	}
 }
 
@@ -36,23 +48,15 @@ func (sl *StatusLine) AddComponent(c Component) {
 // Render generates the complete status line.
 func (sl *StatusLine) Render(ctx context.Context) string {
 	// Create render context
-	renderCtx := NewRenderContext(sl.config)
+	renderCtx := NewRenderContext()
 
 	// Gather data from all providers in parallel
 	sl.gatherData(ctx, renderCtx)
 
-	// Sort components by priority
-	sort.Slice(sl.components, func(i, j int) bool {
-		return sl.components[i].Priority() < sl.components[j].Priority()
-	})
-
-	// Render components
+	// Render components in the order they were added (determined by layout config)
 	var outputs []string
 	for _, component := range sl.components {
-		if !component.Enabled(sl.config) {
-			continue
-		}
-
+		// Components now manage their own enabled state internally
 		// Check optional condition
 		if optional, ok := component.(OptionalComponent); ok {
 			if !optional.ShouldRender(renderCtx) {
@@ -65,9 +69,10 @@ func (sl *StatusLine) Render(ctx context.Context) string {
 		}
 	}
 
-	// Join with separator
-	separator := sl.config.GetString("display.separator", " | ")
-	return strings.Join(outputs, separator)
+	// Join with colored separator
+	separatorColor := format.ParseColor(sl.separator.Color)
+	coloredSeparator := format.Colorize(separatorColor, sl.separator.Symbol)
+	return strings.Join(outputs, coloredSeparator)
 }
 
 // gatherData fetches data from all providers in parallel.
