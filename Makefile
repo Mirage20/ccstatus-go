@@ -14,8 +14,18 @@ GOTEST := $(GOCMD) test
 GOLANGCI_VERSION := v2.4.0
 GOLANGCI_BIN := $(BIN_DIR)/golangci-lint
 
-# Build flags
-LDFLAGS := -s -w
+# Version information
+VERSION ?= dev
+GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+GIT_COMMIT_DATE := $(shell git show -s --format=%ci HEAD 2>/dev/null | cut -d' ' -f1 || echo "")
+BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Build flags with version injection
+LDFLAGS := -s -w \
+	-X 'main.version=$(VERSION)' \
+	-X 'main.commit=$(GIT_COMMIT)' \
+	-X 'main.commitDate=$(GIT_COMMIT_DATE)' \
+	-X 'main.buildDate=$(BUILD_DATE)'
 
 .PHONY: all
 all: lint build ## Run lint and build

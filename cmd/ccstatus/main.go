@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 
 	"github.com/mirage20/ccstatus-go/internal/cache"
 	"github.com/mirage20/ccstatus-go/internal/config"
@@ -27,6 +28,14 @@ import (
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
 )
 
+// Version information - set via ldflags during build
+var (
+	version    = "dev"
+	commit     = "unknown"
+	commitDate = ""
+	buildDate  = "unknown"
+)
+
 func main() {
 	// Handle command line arguments
 	if len(os.Args) > 1 {
@@ -35,7 +44,7 @@ func main() {
 			showHelp()
 			return
 		case "version", "-v", "--version":
-			fmt.Fprintln(os.Stdout, "ccstatus-go v0.1.0")
+			showVersion()
 			return
 		}
 	}
@@ -134,8 +143,30 @@ func readClaudeSession(reader io.Reader) (*core.ClaudeSession, error) {
 	return &session, nil
 }
 
+func showVersion() {
+	fmt.Fprintf(os.Stdout, "ccstatus %s\n", version)
+
+	// Show commit info if available
+	if commit != "unknown" {
+		commitInfo := commit
+		if commitDate != "" {
+			commitInfo = fmt.Sprintf("%s (%s)", commit, commitDate)
+		}
+		fmt.Fprintf(os.Stdout, "  Commit: %s\n", commitInfo)
+	}
+
+	// Show build date
+	fmt.Fprintf(os.Stdout, "  Built:  %s\n", buildDate)
+
+	// Show Go version
+	fmt.Fprintf(os.Stdout, "  Go:     %s\n", runtime.Version())
+
+	// Show platform
+	fmt.Fprintf(os.Stdout, "  OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
+}
+
 func showHelp() {
-	fmt.Fprintln(os.Stdout, "ccstatus-go - Status line generator for Claude Code")
+	fmt.Fprintln(os.Stdout, "ccstatus - Status line generator for Claude Code")
 	fmt.Fprintln(os.Stdout)
 	fmt.Fprintln(os.Stdout, "Usage:")
 	fmt.Fprintln(os.Stdout, "  ccstatus             Read from stdin and generate status line")
@@ -145,17 +176,28 @@ func showHelp() {
 	fmt.Fprintln(os.Stdout, "Expected JSON input format:")
 	example := core.ClaudeSession{
 		SessionID:      "session-123",
-		TranscriptPath: "/path/to/transcript.json",
+		TranscriptPath: "/path/to/transcript.jsonl",
 		CWD:            "/current/working/directory",
 		Model: core.ModelInfo{
-			ID:          "claude-3-opus-20240229",
-			DisplayName: "Claude 3 Opus",
+			ID:          "claude-opus-4-1-20250805",
+			DisplayName: "Opus 4.1",
 		},
 		Workspace: core.Workspace{
 			CurrentDir: "/workspace/current",
 			ProjectDir: "/workspace/project",
 		},
-		Version: "1.0.0",
+		Version: "1.0.89",
+		OutputStyle: core.OutputStyle{
+			Name: "default",
+		},
+		Cost: core.CostInfo{
+			TotalCostUSD:       0.12345,
+			TotalDurationMs:    60000,
+			TotalAPIDurationMs: 15000,
+			TotalLinesAdded:    50,
+			TotalLinesRemoved:  10,
+		},
+		Exceeds200K: false,
 	}
 
 	encoder := json.NewEncoder(os.Stdout)
