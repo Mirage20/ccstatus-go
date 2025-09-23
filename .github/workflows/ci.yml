@@ -70,5 +70,5 @@ jobs:
       - name: Test binary execution (Windows)
         if: runner.os == 'Windows'
         run: |
-          ./build/ccstatus.exe version
-          ./build/ccstatus.exe help
+          ./build/ccstatus version
+          ./build/ccstatus help
