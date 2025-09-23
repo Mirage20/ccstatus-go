@@ -27,6 +27,15 @@ LDFLAGS := -s -w \
 	-X 'main.commitDate=$(GIT_COMMIT_DATE)' \
 	-X 'main.buildDate=$(BUILD_DATE)'
 
+# Define release platforms
+PLATFORMS := \
+	linux/amd64 \
+	linux/arm64 \
+	darwin/amd64 \
+	darwin/arm64 \
+	windows/amd64 \
+	windows/arm64
+
 .PHONY: all
 all: lint build ## Run lint and build
 
@@ -59,6 +68,26 @@ lint-fix: $(GOLANGCI_BIN) ## Fix all auto-fixable issues
 .PHONY: run
 run: build ## Build and run with sample input
 	cat ccstatus.json | $(BUILD_DIR)/$(BINARY_NAME)
+
+.PHONY: release
+release: ## Build for all platforms
+	@echo "Building $(BINARY_NAME) $(VERSION) for all platforms..."
+	@mkdir -p $(BUILD_DIR)/release
+	@for platform in $(PLATFORMS); do \
+		GOOS=$$(echo $$platform | cut -d'/' -f1); \
+		GOARCH=$$(echo $$platform | cut -d'/' -f2); \
+		output_name=$(BUILD_DIR)/release/$(BINARY_NAME)-$(VERSION)-$$GOOS-$$GOARCH; \
+		if [ "$$GOOS" = "windows" ]; then \
+			output_name="$$output_name.exe"; \
+		fi; \
+		echo "Building $$GOOS/$$GOARCH..."; \
+		GOOS=$$GOOS GOARCH=$$GOARCH $(GOBUILD) \
+			-ldflags="$(LDFLAGS)" \
+			-o $$output_name $(CMD_PATH) || exit 1; \
+	done
+	@echo "Creating checksums..."
+	@cd $(BUILD_DIR)/release && shasum -a 256 * > checksums.txt
+	@echo "Release builds complete! Artifacts in $(BUILD_DIR)/release/"
 
 .PHONY: help
 help: ## Show this help message
