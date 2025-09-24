@@ -9,6 +9,11 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 )
 
+const (
+	// Maximum length for display name before falling back to "Claude".
+	maxDisplayNameLength = 20
+)
+
 func init() {
 	// Register the model component factory
 	core.RegisterComponent("model", New)
@@ -71,7 +76,7 @@ func (c *Component) getShortName(info *sessioninfo.SessionInfo) string {
 		return "Haiku"
 	default:
 		// If unknown, return a shortened version
-		if len(displayName) > 20 {
+		if len(displayName) > maxDisplayNameLength {
 			return "Claude"
 		}
 		return displayName

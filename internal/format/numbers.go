@@ -5,6 +5,12 @@ import (
 	"strconv"
 )
 
+const (
+	// Units for number formatting.
+	million = 1000000
+	billion = 1000000000
+)
+
 // WithUnit formats a number with k/M/B suffixes
 // Examples:
 //
@@ -13,10 +19,10 @@ import (
 //	789     -> "789"
 func WithUnit(value int64) string {
 	switch {
-	case value >= 1000000000:
-		return fmt.Sprintf("%.1fB", float64(value)/1000000000)
-	case value >= 1000000:
-		return fmt.Sprintf("%.1fM", float64(value)/1000000)
+	case value >= billion:
+		return fmt.Sprintf("%.1fB", float64(value)/billion)
+	case value >= million:
+		return fmt.Sprintf("%.1fM", float64(value)/million)
 	case value >= 1000:
 		return fmt.Sprintf("%dk", value/1000)
 	default:

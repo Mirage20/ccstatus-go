@@ -1,5 +1,13 @@
 package context
 
+const (
+	// Default Claude context limit (200k tokens).
+	defaultContextLimit = 200000
+	// Default thresholds for usage levels (in percentage).
+	defaultWarningThreshold  = 80.0
+	defaultCriticalThreshold = 90.0
+)
+
 // Config defines configuration for the context (token usage) component.
 type Config struct {
 	// Display template
@@ -32,9 +40,9 @@ func defaultConfig() *Config {
 	return &Config{
 		Template:          "{{.Icon}} {{.Formatted}}",
 		Icon:              "\uea7b", // Nerd Font: Context/Tokens icon
-		ContextLimit:      200000,   // 200k default for Claude
-		WarningThreshold:  80.0,
-		CriticalThreshold: 90.0,
+		ContextLimit:      defaultContextLimit,
+		WarningThreshold:  defaultWarningThreshold,
+		CriticalThreshold: defaultCriticalThreshold,
 		NormalColor:       "green",
 		WarningColor:      "yellow",
 		CriticalColor:     "red",

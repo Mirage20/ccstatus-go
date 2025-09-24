@@ -28,7 +28,7 @@ import (
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
 )
 
-// Version information - set via ldflags during build
+// Version information - set via ldflags during build.
 var (
 	version    = "dev"
 	commit     = "unknown"
@@ -191,11 +191,11 @@ func showHelp() {
 			Name: "default",
 		},
 		Cost: core.CostInfo{
-			TotalCostUSD:       0.12345,
-			TotalDurationMs:    60000,
-			TotalAPIDurationMs: 15000,
-			TotalLinesAdded:    50,
-			TotalLinesRemoved:  10,
+			TotalCostUSD:       0.12345, //nolint:mnd // Test data value
+			TotalDurationMs:    60000,   //nolint:mnd // Test data value
+			TotalAPIDurationMs: 15000,   //nolint:mnd // Test data value
+			TotalLinesAdded:    50,      //nolint:mnd // Test data value
+			TotalLinesRemoved:  10,      //nolint:mnd // Test data value
 		},
 		Exceeds200K: false,
 	}

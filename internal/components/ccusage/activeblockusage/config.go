@@ -1,5 +1,11 @@
 package activeblockusage
 
+const (
+	// Default thresholds for usage levels (in percentage).
+	defaultWarningThreshold  = 60.0
+	defaultCriticalThreshold = 80.0
+)
+
 // Config defines configuration for the active block usage component.
 type Config struct {
 	// Display template
@@ -35,8 +41,8 @@ func defaultConfig() *Config {
 		Template:          "{{.Icon}} {{.Formatted}} {{printf \"%.0f\" .UsagePercentage}}%",
 		Icon:              "\U000F0E7A", // Nerd Font: Up-down arrow icon
 		BlockLimit:        0,            // 0 means use dynamic calculation
-		WarningThreshold:  60.0,
-		CriticalThreshold: 80.0,
+		WarningThreshold:  defaultWarningThreshold,
+		CriticalThreshold: defaultCriticalThreshold,
 		NormalColor:       "green",
 		WarningColor:      "yellow",
 		CriticalColor:     "red",
