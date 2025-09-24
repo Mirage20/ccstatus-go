@@ -21,6 +21,8 @@ go.work.sum
 # Build output
 ccstatus
 /ccstatus
+build/
+bin/
 
 # IDE specific files
 .idea/
