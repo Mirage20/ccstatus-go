@@ -93,7 +93,9 @@ Once configured in Claude Code settings, ccstatus runs automatically every time 
 
 ## Configuration
 
-Place your configuration in one of these locations (because choice is important):
+The included [`config.yaml`](config.yaml) file contains **HUNDREDS** of lines documenting every possible configuration option with painstaking detail. It's your definitive guide to customizing this architectural marvel. Start there. Seriously, we documented *everything*.
+
+Place your actual configuration in one of these locations (because choice is important):
 - `.claude/ccstatus.local.yaml` - For your secret local configs
 - `.claude/ccstatus.yaml` - For configs you're willing to share
 - `~/.claude/ccstatus.yaml` - For when you want consistency across projects
@@ -126,6 +128,8 @@ components:
       sonnet: "yellow"
       haiku: "green"
 ```
+
+Pro tip: The [`config.yaml`](config.yaml) file has **400 lines** of configuration documentation. That's roughly 395 more lines than you need, but we're nothing if not thorough.
 
 ## Architecture (Yes, We Have One)
 

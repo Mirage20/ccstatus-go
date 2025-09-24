@@ -1,0 +1,397 @@
+# ccstatus Configuration File
+# ==========================
+#
+# This file contains all available configuration options for ccstatus-go,
+# a Claude Code statusline generator with provider-component architecture.
+#
+# Configuration files are searched in the following order (first found wins):
+#   1. .claude/ccstatus.local.yaml - Project-specific local config (gitignored)
+#   2. .claude/ccstatus.yaml      - Project-specific shared config
+#   3. ~/.claude/ccstatus.yaml    - User default config
+#
+# All values shown below are the defaults used when not specified.
+# You can override only the values you want to change.
+
+# ============================================================================
+# ACTIVE COMPONENTS
+# ============================================================================
+# List of components to display in the status line, in order.
+# Comment out or remove components you don't want to display.
+# Available components:
+#   - model            (claudecode namespace) - Shows Claude model name with color coding
+#   - context          (claudecode namespace) - Displays token usage in "k" units
+#   - activeblockusage (ccusage namespace)    - Shows ccusage block consumption with icon
+#   - activeblocktime  (ccusage namespace)    - Shows time remaining in block
+#   - changes          (claudecode namespace) - Git-style line changes (+added -removed)
+#   - duration         (claudecode namespace) - Session and API call duration
+#   - version          (claudecode namespace) - Claude Code version
+
+# Default component order if not specified:
+active:
+  - model
+  - context
+  - activeblockusage
+  - activeblocktime
+  - changes
+  - duration
+  - version
+
+# ============================================================================
+# SEPARATOR CONFIGURATION
+# ============================================================================
+# Defines the separator between status line components
+
+separator:
+  # The separator symbol/string to use between components
+  # Default: " | "
+  symbol: " | "
+
+  # Color of the separator (see color options at the bottom)
+  # Default: "gray"
+  color: gray
+
+# ============================================================================
+# CACHE CONFIGURATION
+# ============================================================================
+# Controls the caching behavior for provider data
+
+cache:
+  # Whether to enable caching (set to false to disable all caching)
+  # Default: true
+  enabled: true
+
+  # Directory to store cache files
+  # Default: "" (empty string means use os.TempDir() with session-specific subfolder)
+  dir: ""
+
+# ============================================================================
+# PROVIDER CONFIGURATIONS
+# ============================================================================
+# Providers fetch data that components consume.
+# Each provider can have caching configured independently.
+
+providers:
+  # ---------------------------------------------------------------------------
+  # SESSIONINFO PROVIDER - Provides model, version, and session metadata
+  # ---------------------------------------------------------------------------
+  sessioninfo:
+    cache:
+      # Time-to-live for cached data
+      # Format: number + unit (s=seconds, m=minutes, h=hours)
+      # Default: 0s (no caching - cheap operation, just returns struct fields)
+      ttl: 0s
+
+  # ---------------------------------------------------------------------------
+  # TOKENUSAGE PROVIDER - Reads transcript to calculate token usage
+  # ---------------------------------------------------------------------------
+  tokenusage:
+    cache:
+      # Time-to-live for cached data
+      # Default: 2s (changes frequently during active sessions)
+      ttl: 2s
+
+  # ---------------------------------------------------------------------------
+  # BLOCKUSAGE PROVIDER - Executes ccusage command to get block information
+  # ---------------------------------------------------------------------------
+  blockusage:
+    cache:
+      # Time-to-live for cached data
+      # Default: 10s (expensive external command)
+      ttl: 10s
+
+# ============================================================================
+# COMPONENT CONFIGURATIONS
+# ============================================================================
+# Each component can be individually configured.
+# All components support templates with component-specific variables.
+
+components:
+  # ---------------------------------------------------------------------------
+  # MODEL COMPONENT (claudecode namespace)
+  # Shows the Claude model being used with colored icon
+  # ---------------------------------------------------------------------------
+  model:
+    # Display template with available variables:
+    #   {{.ID}}        - The model ID (e.g. "claude-opus-4-1-20250805")
+    #   {{.Name}}      - The display name (e.g. "Opus 4.1")
+    #   {{.ShortName}} - The extracted short name (e.g. "Opus", "Sonnet", "Haiku")
+    #   {{.Icon}}      - The matched icon based on model ID patterns
+    # Default: "{{.Icon}} {{.ShortName}}"
+    template: "{{.Icon}} {{.ShortName}}"
+
+    # Icons mapped by model pattern (substring match on model ID)
+    # Uses Nerd Font icons - see https://www.nerdfonts.com/cheat-sheet
+    # Default values shown:
+    icons:
+      opus: "\uf2db"    # Microchip icon
+      sonnet: "\uf2db"  # Microchip icon
+      haiku: "\uf2db"   # Microchip icon
+
+    # Colors mapped by model pattern (substring match on model ID)
+    # Default values shown:
+    colors:
+      opus: magenta
+      sonnet: cyan
+      haiku: green
+
+  # ---------------------------------------------------------------------------
+  # CONTEXT COMPONENT (claudecode namespace)
+  # Shows token usage with color-coded thresholds
+  # ---------------------------------------------------------------------------
+  context:
+    # Display template with available variables:
+    #   {{.Icon}}       - The configured icon
+    #   {{.Total}}      - Total token count (raw number)
+    #   {{.Formatted}}  - Formatted token count with unit (e.g. "22k")
+    #   {{.Percentage}} - Usage percentage as float (use {{printf "%.0f" .Percentage}} for whole number)
+    #   {{.Limit}}      - Context limit
+    # Default: "{{.Icon}} {{.Formatted}}"
+    template: "{{.Icon}} {{.Formatted}}"
+
+    # Icon for context display
+    # Default: "\uea7b" (Context/Tokens icon)
+    icon: "\uea7b"
+
+    # Context limit in tokens
+    # Default: 200000 (200k for Claude models)
+    context_limit: 200000
+
+    # Threshold percentages for color changes
+    # Default: 80.0
+    warning_threshold: 80.0
+    # Default: 90.0
+    critical_threshold: 90.0
+
+    # Colors for different usage levels
+    # Default: "green"
+    normal_color: green
+    # Default: "yellow"
+    warning_color: yellow
+    # Default: "red"
+    critical_color: red
+
+  # ---------------------------------------------------------------------------
+  # ACTIVEBLOCKUSAGE COMPONENT (ccusage namespace)
+  # Shows current block token consumption
+  # ---------------------------------------------------------------------------
+  activeblockusage:
+    # Display template with available variables:
+    #   {{.Icon}}            - The configured icon
+    #   {{.TotalTokens}}     - Raw token count
+    #   {{.Formatted}}       - Formatted token count with unit (e.g. "350k")
+    #   {{.UsagePercentage}} - Usage percentage (e.g. 75.5)
+    #   {{.Limit}}           - Active limit (user config or dynamic max)
+    #   {{.MaxBlockTokens}}  - Dynamic max from historical data
+    # Default: '{{.Icon}} {{.Formatted}} {{printf "%.0f" .UsagePercentage}}%'
+    template: '{{.Icon}} {{.Formatted}} {{printf "%.0f" .UsagePercentage}}%'
+
+    # Icon for block usage
+    # Default: "\U000F0E7A" (Up-down arrow icon)
+    icon: "\U000F0E7A"
+
+    # Block token limit override
+    # Default: 0 (0 means use dynamic calculation from historical max)
+    # Set this if you want a fixed limit instead of dynamic calculation
+    block_limit: 0
+
+    # Threshold percentages for color changes
+    # Default: 60.0
+    warning_threshold: 60.0
+    # Default: 80.0
+    critical_threshold: 80.0
+
+    # Colors for different usage levels
+    # Default: "green"
+    normal_color: green
+    # Default: "yellow"
+    warning_color: yellow
+    # Default: "red"
+    critical_color: red
+
+  # ---------------------------------------------------------------------------
+  # ACTIVEBLOCKTIME COMPONENT (ccusage namespace)
+  # Shows time remaining in current block
+  # ---------------------------------------------------------------------------
+  activeblocktime:
+    # Display template with available variables:
+    #   {{.Icon}}             - The configured icon
+    #   {{.RemainingMinutes}} - Raw remaining minutes
+    #   {{.Remaining}}        - Formatted remaining time (e.g. "2h30m", "45m", "0m" for expired)
+    #   {{.EndTime}}          - Formatted end time (e.g. "11:30 PM")
+    #   {{.EndTimeRaw}}       - Raw RFC3339 end time string
+    #   {{.Expired}}          - Boolean indicating if block has expired
+    # Default: "{{.Icon}} {{.Remaining}}{{if .EndTime}} {{.EndTime}}{{end}}"
+    template: "{{.Icon}} {{.Remaining}}{{if .EndTime}} {{.EndTime}}{{end}}"
+
+    # Icon for time display
+    # Default: "\uf017" (Clock icon)
+    icon: "\uf017"
+
+    # Color for the time display
+    # Default: "gray"
+    color: gray
+
+    # Time format for end time (Go time format)
+    # Examples: "3:04 PM" (12-hour), "15:04" (24-hour), "15:04:05" (with seconds)
+    # Default: "3:04 PM"
+    end_time_format: "3:04 PM"
+
+  # ---------------------------------------------------------------------------
+  # CHANGES COMPONENT (claudecode namespace)
+  # Shows lines added/removed in Git-style format
+  # ---------------------------------------------------------------------------
+  changes:
+    # Display template with available variables (all pre-colored):
+    #   {{.Icon}}        - The configured icon (uses component color)
+    #   {{.Added}}       - Number of lines added (uses added color)
+    #   {{.Removed}}     - Number of lines removed (uses removed color)
+    #   {{.AddedSign}}   - The configured added sign (uses added color)
+    #   {{.RemovedSign}} - The configured removed sign (uses removed color)
+    # Default: "{{.AddedSign}}{{.Added}}{{.RemovedSign}}{{.Removed}}"
+    template: "{{.AddedSign}}{{.Added}}{{.RemovedSign}}{{.Removed}}"
+
+    # Icon to display with changes
+    # Default: "" (no icon)
+    icon: ""
+
+    # Color for the icon/component (if icon is used)
+    # Default: "" (no color override)
+    color: ""
+
+    # Signs/prefixes for added and removed lines
+    # Default: "+"
+    added_sign: "+"
+    # Default: "-"
+    removed_sign: "-"
+
+    # Colors for added/removed lines
+    # Default: "green"
+    added_color: green
+    # Default: "red"
+    removed_color: red
+
+    # Whether to show component when both values are zero
+    # Default: false
+    show_zero: false
+
+  # ---------------------------------------------------------------------------
+  # DURATION COMPONENT (claudecode namespace)
+  # Shows session and API call durations
+  # ---------------------------------------------------------------------------
+  duration:
+    # Display template with available variables:
+    #   {{.Icon}}          - The main duration icon
+    #   {{.APIIcon}}       - The API duration icon
+    #   {{.TotalDuration}} - Formatted total duration (e.g. "2m 15s")
+    #   {{.APIDuration}}   - Formatted API duration (e.g. "1m 30s")
+    #   {{.TotalMs}}       - Raw total duration in milliseconds
+    #   {{.APIMs}}         - Raw API duration in milliseconds
+    # Default: "{{.Icon}} {{.TotalDuration}}{{if .APIDuration}} {{.APIIcon}} {{.APIDuration}}{{end}}"
+    template: "{{.Icon}} {{.TotalDuration}}{{if .APIDuration}} {{.APIIcon}} {{.APIDuration}}{{end}}"
+
+    # Icon for total duration
+    # Default: "\uF520" (Stopwatch icon)
+    icon: "\uF520"
+
+    # Icon for API duration
+    # Default: "\U000F1616" (Connected plug icon)
+    api_icon: "\U000F1616"
+
+    # Color for the duration display
+    # Default: "gray"
+    color: gray
+
+    # Whether to show API duration alongside total duration
+    # Default: true
+    show_api_duration: true
+
+  # ---------------------------------------------------------------------------
+  # VERSION COMPONENT (claudecode namespace)
+  # Shows Claude Code version
+  # ---------------------------------------------------------------------------
+  version:
+    # Display template with available variables:
+    #   {{.Version}} - The Claude Code version (e.g. "1.0.89")
+    #   {{.Icon}}    - The configured icon (if any)
+    # Default: "v{{.Version}}"
+    template: "v{{.Version}}"
+
+    # Icon to display with version
+    # Default: "" (no icon)
+    icon: ""
+
+    # Color for the version display
+    # Default: "gray"
+    color: gray
+
+# ============================================================================
+# COLOR OPTIONS
+# ============================================================================
+# Available colors for any color configuration:
+#   - red
+#   - green
+#   - yellow
+#   - blue
+#   - magenta
+#   - cyan
+#   - gray (default for unknown colors)
+#   - grey (alternative spelling)
+
+# ============================================================================
+# TEMPLATE FUNCTIONS
+# ============================================================================
+# Templates use Go's text/template syntax with these additional functions:
+#   - printf    - Format strings (e.g., {{printf "%.0f" .Percentage}})
+#   - if/else   - Conditional rendering (e.g., {{if .Condition}}...{{end}})
+#   - formatK   - Format number with K suffix (built-in for some components)
+#   - colorize  - Apply color to text (built-in for some components)
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# 1. All paths are relative to the configuration file location
+# 2. Component order in 'active' list determines display order
+# 3. Providers are automatically created based on component requirements
+# 4. Cache is session-isolated using Claude session ID
+# 5. Icons require a Nerd Font to display correctly
+# 6. Components from 'ccusage' namespace require ccusage CLI to be installed
+# 7. Empty string values typically mean "use default" or "disabled"
+
+# ============================================================================
+# EXAMPLE CONFIGURATIONS
+# ============================================================================
+
+# Minimal configuration - just model and context:
+# active: ["model", "context"]
+
+# Disable caching for all providers:
+# cache:
+#   enabled: false
+
+# Custom separator:
+# separator:
+#   symbol: " • "
+#   color: cyan
+
+# Override component template:
+# components:
+#   model:
+#     template: "[{{.ShortName}}]"
+
+# Cache in specific directory:
+# cache:
+#   dir: "/tmp/ccstatus-cache"
+
+# Custom model colors:
+# components:
+#   model:
+#     colors:
+#       opus: magenta
+#       sonnet: cyan
+#       haiku: green
+
+# Adjust token warning thresholds:
+# components:
+#   context:
+#     warning_threshold: 70.0
+#     critical_threshold: 85.0
