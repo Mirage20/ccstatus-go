@@ -1,5 +1,11 @@
 # ccstatus-go 🎭
 
+[![Go Version](https://img.shields.io/github/go-mod/go-version/mirage20/ccstatus-go)](go.mod)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/mirage20/ccstatus-go)](https://github.com/mirage20/ccstatus-go/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mirage20/ccstatus-go)](https://goreportcard.com/report/github.com/mirage20/ccstatus-go)
+[![Build Status](https://github.com/mirage20/ccstatus-go/workflows/CI/badge.svg)](https://github.com/mirage20/ccstatus-go/actions)
+
 > *One of the world's status lines ever made. Definitely exists. Technically functional.*
 
 A magnificently over-engineered status line generator for Claude Code that proves once and for all that displaying a handful of information requires dozens of Go files, multiple layers of abstraction, and a plugin architecture that would make enterprise Java developers weep with envy.
