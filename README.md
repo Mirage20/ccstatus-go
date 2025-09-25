@@ -22,7 +22,7 @@ Remember when you just wanted to know which Claude model you're using? Well, we 
 
 - **Dozens of Go files** for displaying a few pieces of information
 - **Multiple providers** fetching data in parallel (it's basically distributed computing)
-- **Numerous components** each with their own configuration namespace
+- **Numerous components** each with their own configuration
 - **Infinite customization** via YAML (hundreds of lines of possibilities)
 - **Actual performance improvements** through caching (take that, bash one-liners!)
 

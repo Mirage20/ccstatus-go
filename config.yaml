@@ -18,13 +18,13 @@
 # List of components to display in the status line, in order.
 # Comment out or remove components you don't want to display.
 # Available components:
-#   - model            (claudecode namespace) - Shows Claude model name with color coding
-#   - context          (claudecode namespace) - Displays token usage in "k" units
-#   - activeblockusage (ccusage namespace)    - Shows ccusage block consumption with icon
-#   - activeblocktime  (ccusage namespace)    - Shows time remaining in block
-#   - changes          (claudecode namespace) - Git-style line changes (+added -removed)
-#   - duration         (claudecode namespace) - Session and API call duration
-#   - version          (claudecode namespace) - Claude Code version
+#   - model            - Shows Claude model name with color coding
+#   - context          - Displays token usage in "k" units
+#   - activeblockusage - Shows ccusage block consumption with icon
+#   - activeblocktime  - Shows time remaining in block
+#   - changes          - Git-style line changes (+added -removed)
+#   - duration         - Session and API call duration
+#   - version          - Claude Code version
 
 # Default component order if not specified:
 active:
@@ -107,7 +107,7 @@ providers:
 
 components:
   # ---------------------------------------------------------------------------
-  # MODEL COMPONENT (claudecode namespace)
+  # MODEL COMPONENT
   # Shows the Claude model being used with colored icon
   # ---------------------------------------------------------------------------
   model:
@@ -135,7 +135,7 @@ components:
       haiku: green
 
   # ---------------------------------------------------------------------------
-  # CONTEXT COMPONENT (claudecode namespace)
+  # CONTEXT COMPONENT
   # Shows token usage with color-coded thresholds
   # ---------------------------------------------------------------------------
   context:
@@ -171,7 +171,7 @@ components:
     critical_color: red
 
   # ---------------------------------------------------------------------------
-  # ACTIVEBLOCKUSAGE COMPONENT (ccusage namespace)
+  # ACTIVEBLOCKUSAGE COMPONENT
   # Shows current block token consumption
   # ---------------------------------------------------------------------------
   activeblockusage:
@@ -209,7 +209,7 @@ components:
     critical_color: red
 
   # ---------------------------------------------------------------------------
-  # ACTIVEBLOCKTIME COMPONENT (ccusage namespace)
+  # ACTIVEBLOCKTIME COMPONENT
   # Shows time remaining in current block
   # ---------------------------------------------------------------------------
   activeblocktime:
@@ -237,7 +237,7 @@ components:
     end_time_format: "3:04 PM"
 
   # ---------------------------------------------------------------------------
-  # CHANGES COMPONENT (claudecode namespace)
+  # CHANGES COMPONENT
   # Shows lines added/removed in Git-style format
   # ---------------------------------------------------------------------------
   changes:
@@ -275,7 +275,7 @@ components:
     show_zero: false
 
   # ---------------------------------------------------------------------------
-  # DURATION COMPONENT (claudecode namespace)
+  # DURATION COMPONENT
   # Shows session and API call durations
   # ---------------------------------------------------------------------------
   duration:
@@ -306,7 +306,7 @@ components:
     show_api_duration: true
 
   # ---------------------------------------------------------------------------
-  # VERSION COMPONENT (claudecode namespace)
+  # VERSION COMPONENT
   # Shows Claude Code version
   # ---------------------------------------------------------------------------
   version:

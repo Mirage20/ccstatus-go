@@ -61,4 +61,3 @@ Generate the config file to the path provided above (default: config.yaml) with:
 3. Scan core configuration loading code for default values
 4. Scan for any hardcoded values that should be configurable
 5. Generate well-documented YAML with all findings
-6. Include namespace information for components (claudecode, ccusage, etc.)
