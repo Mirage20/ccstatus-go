@@ -76,7 +76,7 @@ release: ## Build for all platforms
 	@for platform in $(PLATFORMS); do \
 		GOOS=$$(echo $$platform | cut -d'/' -f1); \
 		GOARCH=$$(echo $$platform | cut -d'/' -f2); \
-		output_name=$(BUILD_DIR)/release/$(BINARY_NAME)-$(VERSION)-$$GOOS-$$GOARCH; \
+		output_name=$(BUILD_DIR)/release/$(BINARY_NAME)-$$GOOS-$$GOARCH; \
 		if [ "$$GOOS" = "windows" ]; then \
 			output_name="$$output_name.exe"; \
 		fi; \
