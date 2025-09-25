@@ -30,11 +30,20 @@ Remember when you just wanted to know which Claude model you're using? Well, we 
 
 ### Option 1: Download from GitHub Releases (For Those Who Value Their Time)
 
-#### macOS/Linux (The Enlightened Path)
+First, grab the appropriate binary from [releases](https://github.com/mirage20/ccstatus-go/releases/latest) (all 5MB of enterprise-grade architecture):
+
+- **macOS (Intel)**: `ccstatus-darwin-amd64` - For those still rocking x86
+- **macOS (Apple Silicon)**: `ccstatus-darwin-arm64` - Living in the future
+- **Linux (x64)**: `ccstatus-linux-amd64` - The penguin's choice
+- **Linux (ARM)**: `ccstatus-linux-arm64` - For your Raspberry Pi status needs
+- **Windows (x64)**: `ccstatus-windows-amd64.exe` - The path of suffering
+- **Windows (ARM)**: `ccstatus-windows-arm64.exe` - Suffering, but modern
+
+#### macOS/Linux Installation (The Enlightened Path)
 
 ```bash
-# Download the latest release (all 5MB of enterprise-grade architecture)
-curl -L https://github.com/mirage20/ccstatus-go/releases/latest/download/ccstatus-$(uname -s)-$(uname -m) -o ccstatus
+# Bestow upon it a proper name (shed the platform-specific suffix)
+mv ccstatus-darwin-arm64 ccstatus  # or whatever platform you downloaded
 
 # Make it executable (grant it the power of execution)
 chmod +x ccstatus
@@ -53,10 +62,12 @@ Then tell Claude Code about your life-changing decision by editing `~/.claude/se
    }
    ```
 
-#### Windows (The Path of Suffering)
+#### Windows Installation (The Path of Suffering)
 
-1. Download the binary from [releases](https://github.com/mirage20/ccstatus-go/releases/latest)
-   - Choose `ccstatus-Windows-x86_64.exe` (or `arm64` if you're living in the future)
+1. Rename it to something civilized:
+   ```cmd
+   ren ccstatus-windows-amd64.exe ccstatus.exe
+   ```
 
 2. Put it somewhere sensible (like `C:\tools\ccstatus.exe`)
 
