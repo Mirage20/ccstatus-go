@@ -135,13 +135,13 @@ Pro tip: The [`config.yaml`](config.yaml) file has **400 lines** of configuratio
 
 ```
 ┌─────────────────────────────────────────┐
-│           Claude Session JSON            │
+│           Claude Session JSON           │
 └─────────────────┬───────────────────────┘
                   │
                   ▼
 ┌─────────────────────────────────────────┐
-│         StatusLine Orchestrator          │
-│     (The Conductor of This Symphony)     │
+│         StatusLine Orchestrator         │
+│     (The Conductor of This Symphony)    │
 └─────────────────┬───────────────────────┘
                   │
          ┌────────┴────────┐
@@ -194,7 +194,9 @@ Feel free to add more abstraction layers. We're particularly interested in:
 
 ## License
 
-This project is licensed under the "You Actually Built This?" License. Use at your own risk and sense of architectural dignity.
+This project is licensed under the MIT License - because even over-engineered status lines deserve freedom. See the [LICENSE](LICENSE) file for the legally binding version that lawyers actually understand.
+
+In simpler terms: Use it, break it, fork it, ship it. Just don't blame us when your status line becomes sentient.
 
 ## Acknowledgments
 
