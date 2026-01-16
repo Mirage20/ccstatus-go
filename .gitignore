@@ -19,7 +19,6 @@ go.work
 go.work.sum
 
 # Build output
-ccstatus
 /ccstatus
 build/
 bin/

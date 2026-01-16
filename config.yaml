@@ -18,20 +18,22 @@
 # List of components to display in the status line, in order.
 # Comment out or remove components you don't want to display.
 # Available components:
-#   - model            - Shows Claude model name with color coding
-#   - context          - Displays token usage in "k" units
-#   - activeblockusage - Shows ccusage block consumption with icon
-#   - activeblocktime  - Shows time remaining in block
-#   - changes          - Git-style line changes (+added -removed)
-#   - duration         - Session and API call duration
-#   - version          - Claude Code version
+#   - model              - Shows Claude model name with color coding
+#   - context            - Displays token usage in "k" units
+#   - ratelimit.fivehour - Shows 5-hour rate limit from Anthropic API
+#   - ratelimit.sevenday - Shows 7-day rate limit from Anthropic API
+#   - activeblockusage   - Shows ccusage block consumption (legacy)
+#   - activeblocktime    - Shows time remaining in block (legacy)
+#   - changes            - Git-style line changes (+added -removed)
+#   - duration           - Session and API call duration
+#   - version            - Claude Code version
 
 # Default component order if not specified:
 active:
   - model
   - context
-  - activeblockusage
-  - activeblocktime
+  - ratelimit.fivehour
+  - ratelimit.sevenday
   - changes
   - duration
   - version
@@ -98,6 +100,18 @@ providers:
       # Time-to-live for cached data
       # Default: 10s (expensive external command)
       ttl: 10s
+
+  # ---------------------------------------------------------------------------
+  # RATELIMIT PROVIDER - Fetches rate limits from Anthropic OAuth API
+  # ---------------------------------------------------------------------------
+  ratelimit:
+    # Time-to-live for global rate limit cache (account-wide, not per-session)
+    # Default: 60s
+    ttl: 60s
+
+    # Directory for global cache file
+    # Default: ~/.cache/ccstatus (or $XDG_CACHE_HOME/ccstatus)
+    # cache_dir: ""
 
 # ============================================================================
 # COMPONENT CONFIGURATIONS
@@ -171,7 +185,89 @@ components:
     critical_color: red
 
   # ---------------------------------------------------------------------------
-  # ACTIVEBLOCKUSAGE COMPONENT
+  # RATELIMIT.FIVEHOUR COMPONENT
+  # Shows 5-hour rate limit usage from Anthropic API
+  # ---------------------------------------------------------------------------
+  ratelimit.fivehour:
+    # Display template with available variables (pre-colored):
+    #   {{.Icon}}        - The configured icon/label (uses status color)
+    #   {{.Utilization}} - Usage percentage with % sign (uses status color)
+    #   {{.Remaining}}   - Formatted remaining time (uses info color)
+    #   {{.EndTime}}     - Formatted reset time (uses info color)
+    #   {{.EndTimeRaw}}  - Raw reset time for custom formatting
+    # Default: "{{.Icon}} {{.Utilization}} {{.Remaining}} {{.EndTime}}"
+    template: "{{.Icon}} {{.Utilization}} {{.Remaining}} {{.EndTime}}"
+
+    # Icon/label to display
+    # Default: "5h"
+    icon: "5h"
+
+    # Time format for end time (Go time format)
+    # Examples: "3:04 PM" (12-hour), "15:04" (24-hour)
+    # Default: "3:04 PM"
+    end_time_format: "3:04 PM"
+
+    # Threshold percentages for color changes
+    # Default: 60.0
+    warning_threshold: 60.0
+    # Default: 80.0
+    critical_threshold: 80.0
+
+    # Colors for different usage levels (applies to icon and utilization)
+    # Default: "green"
+    normal_color: green
+    # Default: "yellow"
+    warning_color: yellow
+    # Default: "red"
+    critical_color: red
+
+    # Color for supplementary info (remaining time, end time)
+    # Default: "gray"
+    color: gray
+
+  # ---------------------------------------------------------------------------
+  # RATELIMIT.SEVENDAY COMPONENT
+  # Shows 7-day rate limit usage from Anthropic API
+  # ---------------------------------------------------------------------------
+  ratelimit.sevenday:
+    # Display template with available variables (pre-colored):
+    #   {{.Icon}}        - The configured icon/label (uses status color)
+    #   {{.Utilization}} - Usage percentage with % sign (uses status color)
+    #   {{.Remaining}}   - Formatted remaining time (uses info color)
+    #   {{.EndTime}}     - Formatted reset time (uses info color)
+    #   {{.EndTimeRaw}}  - Raw reset time for custom formatting
+    # Default: "{{.Icon}} {{.Utilization}} {{.Remaining}}"
+    template: "{{.Icon}} {{.Utilization}} {{.Remaining}}"
+
+    # Icon/label to display
+    # Default: "7d"
+    icon: "7d"
+
+    # Time format for end time (Go time format)
+    # Examples: "Mon 3:04 PM", "Jan 2 15:04"
+    # Default: "Mon 3:04 PM"
+    end_time_format: "Mon 3:04 PM"
+
+    # Threshold percentages for color changes
+    # Default: 60.0
+    warning_threshold: 60.0
+    # Default: 80.0
+    critical_threshold: 80.0
+
+    # Colors for different usage levels (applies to icon and utilization)
+    # Default: "green"
+    normal_color: green
+    # Default: "yellow"
+    warning_color: yellow
+    # Default: "red"
+    critical_color: red
+
+    # Color for supplementary info (remaining time)
+    # Default: "gray"
+    color: gray
+
+  # ---------------------------------------------------------------------------
+  # ACTIVEBLOCKUSAGE COMPONENT (Legacy - requires ccusage CLI)
   # Shows current block token consumption
   # ---------------------------------------------------------------------------
   activeblockusage:
@@ -209,7 +305,7 @@ components:
     critical_color: red
 
   # ---------------------------------------------------------------------------
-  # ACTIVEBLOCKTIME COMPONENT
+  # ACTIVEBLOCKTIME COMPONENT (Legacy - requires ccusage CLI)
   # Shows time remaining in current block
   # ---------------------------------------------------------------------------
   activeblocktime:
@@ -356,6 +452,7 @@ components:
 # 5. Icons require a Nerd Font to display correctly
 # 6. Components from 'ccusage' namespace require ccusage CLI to be installed
 # 7. Empty string values typically mean "use default" or "disabled"
+# 8. ratelimit components fetch data from Anthropic OAuth API (requires valid token)
 
 # ============================================================================
 # EXAMPLE CONFIGURATIONS
@@ -363,6 +460,26 @@ components:
 
 # Minimal configuration - just model and context:
 # active: ["model", "context"]
+
+# Use only rate limit components (recommended):
+# active:
+#   - model
+#   - context
+#   - ratelimit.fivehour
+#   - ratelimit.sevenday
+#   - changes
+#   - duration
+#   - version
+
+# Use legacy ccusage components:
+# active:
+#   - model
+#   - context
+#   - activeblockusage
+#   - activeblocktime
+#   - changes
+#   - duration
+#   - version
 
 # Disable caching for all providers:
 # cache:
@@ -395,3 +512,10 @@ components:
 #   context:
 #     warning_threshold: 70.0
 #     critical_threshold: 85.0
+
+# Custom rate limit display (show only percentage):
+# components:
+#   ratelimit.fivehour:
+#     template: "{{.Icon}} {{.Utilization}}"
+#   ratelimit.sevenday:
+#     template: "{{.Icon}} {{.Utilization}}"

@@ -15,6 +15,7 @@ import (
 
 	// Import providers for self-registration.
 	_ "github.com/mirage20/ccstatus-go/internal/providers/blockusage"
+	_ "github.com/mirage20/ccstatus-go/internal/providers/ratelimit"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
 
@@ -26,6 +27,8 @@ import (
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
+	_ "github.com/mirage20/ccstatus-go/internal/components/ratelimit/fivehour"
+	_ "github.com/mirage20/ccstatus-go/internal/components/ratelimit/sevenday"
 )
 
 // Version information - set via ldflags during build.
@@ -84,8 +87,8 @@ func run() error {
 		componentNames = []string{
 			"model",
 			"context",
-			"activeblockusage",
-			"activeblocktime",
+			"ratelimit.fivehour",
+			"ratelimit.sevenday",
 			"changes",
 			"duration",
 			"version",
