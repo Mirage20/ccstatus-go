@@ -184,8 +184,8 @@ components:
     #   {{.Remaining}}   - Formatted remaining time (uses info color)
     #   {{.EndTime}}     - Formatted reset time (uses info color)
     #   {{.EndTimeRaw}}  - Raw reset time for custom formatting
-    # Default: "{{.Icon}} {{.Utilization}} {{.Remaining}} {{.EndTime}}"
-    template: "{{.Icon}} {{.Utilization}} {{.Remaining}} {{.EndTime}}"
+    # Default: "{{.Icon}} {{.Utilization}}{{if .EndTime}} {{.Remaining}} {{.EndTime}}{{end}}"
+    template: "{{.Icon}} {{.Utilization}}{{if .EndTime}} {{.Remaining}} {{.EndTime}}{{end}}"
 
     # Icon/label to display
     # Default: "5h"
@@ -225,8 +225,8 @@ components:
     #   {{.Remaining}}   - Formatted remaining time (uses info color)
     #   {{.EndTime}}     - Formatted reset time (uses info color)
     #   {{.EndTimeRaw}}  - Raw reset time for custom formatting
-    # Default: "{{.Icon}} {{.Utilization}} {{.Remaining}}"
-    template: "{{.Icon}} {{.Utilization}} {{.Remaining}}"
+    # Default: "{{.Icon}} {{.Utilization}}{{if .EndTime}} {{.Remaining}}{{end}}"
+    template: "{{.Icon}} {{.Utilization}}{{if .EndTime}} {{.Remaining}}{{end}}"
 
     # Icon/label to display
     # Default: "7d"

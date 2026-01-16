@@ -18,7 +18,11 @@ const (
 )
 
 // Colorize applies a color to text and resets at the end.
+// Returns empty string if text is empty (no color codes for nothing).
 func Colorize(color Color, text string) string {
+	if text == "" {
+		return ""
+	}
 	return string(color) + text + string(ColorReset)
 }
 

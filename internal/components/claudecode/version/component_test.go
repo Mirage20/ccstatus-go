@@ -79,7 +79,7 @@ func TestRender(t *testing.T) {
 			sessionInfo: &sessioninfo.SessionInfo{
 				Version: "1.0.0",
 			},
-			want: "\033[90m\033[0m", // Just color codes with empty content
+			want: "", // Empty template returns empty string (no color codes)
 		},
 		{
 			name: "template with only icon",

@@ -40,7 +40,7 @@ type Config struct {
 // defaultConfig returns the default configuration.
 func defaultConfig() *Config {
 	return &Config{
-		Template:          "{{.Icon}} {{.Utilization}} {{.Remaining}}",
+		Template:          "{{.Icon}} {{.Utilization}}{{if .EndTime}} {{.Remaining}}{{end}}",
 		Icon:              "7d",
 		EndTimeFormat:     "Mon 3:04 PM",
 		WarningThreshold:  defaultWarningThreshold,

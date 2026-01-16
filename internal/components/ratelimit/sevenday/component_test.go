@@ -100,8 +100,8 @@ func TestRender(t *testing.T) {
 					ResetsAt:    nil,
 				},
 			},
-			// Empty remaining (gray color code with empty content)
-			want: "\033[32m7d\033[0m \033[32m50%\033[0m \033[90m\033[0m",
+			// No trailing spaces or empty color codes when reset time is nil
+			want: "\033[32m7d\033[0m \033[32m50%\033[0m",
 		},
 		{
 			name: "uses custom icon",

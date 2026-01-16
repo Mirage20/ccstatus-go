@@ -202,7 +202,7 @@ func TestRender(t *testing.T) {
 					DisplayName: "Opus 4.1",
 				},
 			},
-			want: "\033[36m\033[0m", // Just color codes with empty content
+			want: "", // Empty template returns empty string (no color codes)
 		},
 		{
 			name: "specific pattern matching for opus",
