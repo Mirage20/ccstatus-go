@@ -14,14 +14,11 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/core"
 
 	// Import providers for self-registration.
-	_ "github.com/mirage20/ccstatus-go/internal/providers/blockusage"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/ratelimit"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
 
 	// Import components for self-registration.
-	_ "github.com/mirage20/ccstatus-go/internal/components/ccusage/activeblocktime"
-	_ "github.com/mirage20/ccstatus-go/internal/components/ccusage/activeblockusage"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/changes"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"

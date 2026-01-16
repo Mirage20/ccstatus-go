@@ -22,8 +22,6 @@
 #   - context            - Displays token usage in "k" units
 #   - ratelimit.fivehour - Shows 5-hour rate limit from Anthropic API
 #   - ratelimit.sevenday - Shows 7-day rate limit from Anthropic API
-#   - activeblockusage   - Shows ccusage block consumption (legacy)
-#   - activeblocktime    - Shows time remaining in block (legacy)
 #   - changes            - Git-style line changes (+added -removed)
 #   - duration           - Session and API call duration
 #   - version            - Claude Code version
@@ -91,15 +89,6 @@ providers:
       # Time-to-live for cached data
       # Default: 2s (changes frequently during active sessions)
       ttl: 2s
-
-  # ---------------------------------------------------------------------------
-  # BLOCKUSAGE PROVIDER - Executes ccusage command to get block information
-  # ---------------------------------------------------------------------------
-  blockusage:
-    cache:
-      # Time-to-live for cached data
-      # Default: 10s (expensive external command)
-      ttl: 10s
 
   # ---------------------------------------------------------------------------
   # RATELIMIT PROVIDER - Fetches rate limits from Anthropic OAuth API
@@ -267,72 +256,6 @@ components:
     color: gray
 
   # ---------------------------------------------------------------------------
-  # ACTIVEBLOCKUSAGE COMPONENT (Legacy - requires ccusage CLI)
-  # Shows current block token consumption
-  # ---------------------------------------------------------------------------
-  activeblockusage:
-    # Display template with available variables:
-    #   {{.Icon}}            - The configured icon
-    #   {{.TotalTokens}}     - Raw token count
-    #   {{.Formatted}}       - Formatted token count with unit (e.g. "350k")
-    #   {{.UsagePercentage}} - Usage percentage (e.g. 75.5)
-    #   {{.Limit}}           - Active limit (user config or dynamic max)
-    #   {{.MaxBlockTokens}}  - Dynamic max from historical data
-    # Default: '{{.Icon}} {{.Formatted}} {{printf "%.0f" .UsagePercentage}}%'
-    template: '{{.Icon}} {{.Formatted}} {{printf "%.0f" .UsagePercentage}}%'
-
-    # Icon for block usage
-    # Default: "\U000F0E7A" (Up-down arrow icon)
-    icon: "\U000F0E7A"
-
-    # Block token limit override
-    # Default: 0 (0 means use dynamic calculation from historical max)
-    # Set this if you want a fixed limit instead of dynamic calculation
-    block_limit: 0
-
-    # Threshold percentages for color changes
-    # Default: 60.0
-    warning_threshold: 60.0
-    # Default: 80.0
-    critical_threshold: 80.0
-
-    # Colors for different usage levels
-    # Default: "green"
-    normal_color: green
-    # Default: "yellow"
-    warning_color: yellow
-    # Default: "red"
-    critical_color: red
-
-  # ---------------------------------------------------------------------------
-  # ACTIVEBLOCKTIME COMPONENT (Legacy - requires ccusage CLI)
-  # Shows time remaining in current block
-  # ---------------------------------------------------------------------------
-  activeblocktime:
-    # Display template with available variables:
-    #   {{.Icon}}             - The configured icon
-    #   {{.RemainingMinutes}} - Raw remaining minutes
-    #   {{.Remaining}}        - Formatted remaining time (e.g. "2h30m", "45m", "0m" for expired)
-    #   {{.EndTime}}          - Formatted end time (e.g. "11:30 PM")
-    #   {{.EndTimeRaw}}       - Raw RFC3339 end time string
-    #   {{.Expired}}          - Boolean indicating if block has expired
-    # Default: "{{.Icon}} {{.Remaining}}{{if .EndTime}} {{.EndTime}}{{end}}"
-    template: "{{.Icon}} {{.Remaining}}{{if .EndTime}} {{.EndTime}}{{end}}"
-
-    # Icon for time display
-    # Default: "\uf017" (Clock icon)
-    icon: "\uf017"
-
-    # Color for the time display
-    # Default: "gray"
-    color: gray
-
-    # Time format for end time (Go time format)
-    # Examples: "3:04 PM" (12-hour), "15:04" (24-hour), "15:04:05" (with seconds)
-    # Default: "3:04 PM"
-    end_time_format: "3:04 PM"
-
-  # ---------------------------------------------------------------------------
   # CHANGES COMPONENT
   # Shows lines added/removed in Git-style format
   # ---------------------------------------------------------------------------
@@ -450,9 +373,8 @@ components:
 # 3. Providers are automatically created based on component requirements
 # 4. Cache is session-isolated using Claude session ID
 # 5. Icons require a Nerd Font to display correctly
-# 6. Components from 'ccusage' namespace require ccusage CLI to be installed
-# 7. Empty string values typically mean "use default" or "disabled"
-# 8. ratelimit components fetch data from Anthropic OAuth API (requires valid token)
+# 6. Empty string values typically mean "use default" or "disabled"
+# 7. ratelimit components fetch data from Anthropic OAuth API (requires valid token)
 
 # ============================================================================
 # EXAMPLE CONFIGURATIONS
@@ -460,26 +382,6 @@ components:
 
 # Minimal configuration - just model and context:
 # active: ["model", "context"]
-
-# Use only rate limit components (recommended):
-# active:
-#   - model
-#   - context
-#   - ratelimit.fivehour
-#   - ratelimit.sevenday
-#   - changes
-#   - duration
-#   - version
-
-# Use legacy ccusage components:
-# active:
-#   - model
-#   - context
-#   - activeblockusage
-#   - activeblocktime
-#   - changes
-#   - duration
-#   - version
 
 # Disable caching for all providers:
 # cache:

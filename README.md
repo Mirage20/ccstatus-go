@@ -121,7 +121,7 @@ Example configuration that definitely isn't overkill:
 
 ```yaml
 # Choose your fighters (components)
-active: ["model", "context", "activeblockusage", "activeblocktime"]
+active: ["model", "context", "ratelimit.fivehour", "ratelimit.sevenday"]
 
 # Customize that separator like your life depends on it
 separator:
