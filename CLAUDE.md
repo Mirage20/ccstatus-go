@@ -34,8 +34,8 @@ This is a Go implementation of a Claude Code statusline generator that follows a
    - Wrapped with `CachingProvider` for TTL-based caching
 
 2. **Components** (`internal/components/`) - Render specific parts of the status line
-   - Each component implements `Component` interface with `Name()`, `Render()`, and `RequiredProviders()` methods
-   - Self-register via init() functions when imported
+   - Each component implements `Component` interface with `Render(ctx)` and `RequiredProviders()` methods
+   - Self-register via init() functions with name string when imported
    - Component order determined by config or defaults
    - Optional `OptionalComponent` interface for conditional rendering
 
@@ -55,7 +55,7 @@ This is a Go implementation of a Claude Code statusline generator that follows a
 
 ### Key Interfaces
 - `core.Provider` - Data fetching interface (`Key()`, `Provide(ctx)`)
-- `core.Component` - Rendering interface (`Name()`, `Render()`, `RequiredProviders()`)
+- `core.Component` - Rendering interface (`Render(ctx)`, `RequiredProviders()`)
 - `core.Cache` - Caching abstraction (FileCache or NullCache)
 - `core.RenderContext` - Shared context for passing data from providers to components
 - `core.Registry` - Central registry for self-registering components and providers
@@ -78,14 +78,14 @@ The tool expects JSON input via stdin with the following structure:
   "transcript_path": "/path/to/transcript.jsonl",
   "cwd": "/current/working/directory",
   "model": {
-    "id": "claude-opus-4-1-20250805",
-    "display_name": "Opus 4.1"
+    "id": "claude-opus-4-5-20251101",
+    "display_name": "Opus 4.5"
   },
   "workspace": {
     "current_dir": "/workspace/current",
     "project_dir": "/workspace/project"
   },
-  "version": "1.0.89",
+  "version": "2.1.9",
   "output_style": {
     "name": "default"
   },
@@ -95,6 +95,19 @@ The tool expects JSON input via stdin with the following structure:
     "total_api_duration_ms": 30204,
     "total_lines_added": 67,
     "total_lines_removed": 12
+  },
+  "context_window": {
+    "total_input_tokens": 15234,
+    "total_output_tokens": 4521,
+    "context_window_size": 200000,
+    "current_usage": {
+      "input_tokens": 8500,
+      "output_tokens": 1200,
+      "cache_creation_input_tokens": 5000,
+      "cache_read_input_tokens": 2000
+    },
+    "used_percentage": 81,
+    "remaining_percentage": 19
   },
   "exceeds_200k_tokens": false
 }
