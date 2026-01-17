@@ -20,6 +20,7 @@
 # Available components:
 #   - model              - Shows Claude model name with color coding
 #   - context            - Displays token usage in "k" units
+#   - cwd                - Current working directory basename
 #   - ratelimit.fivehour - Shows 5-hour rate limit from Anthropic API
 #   - ratelimit.sevenday - Shows 7-day rate limit from Anthropic API
 #   - changes            - Git-style line changes (+added -removed)
@@ -36,6 +37,8 @@ active:
   - changes
   - duration
   - version
+  - newline
+  - cwd
 
 # ============================================================================
 # SEPARATOR CONFIGURATION
@@ -164,6 +167,35 @@ components:
     warning_color: yellow
     # Default: "red"
     critical_color: red
+
+  # ---------------------------------------------------------------------------
+  # CWD COMPONENT
+  # Shows current working directory basename
+  # ---------------------------------------------------------------------------
+  cwd:
+    # Display template with available variables:
+    #   {{.Dir}}  - The current directory basename (e.g. "providers")
+    #   {{.Icon}} - The configured icon
+    # Default: "{{.Icon}} {{.Dir}}"
+    template: "{{.Icon}} {{.Dir}}"
+
+    # Icon for directory display
+    # Default: "\uf07b" (Folder icon)
+    icon: "\uf07b"
+
+    # Color for the display
+    # Default: "gray"
+    color: gray
+
+    # Maximum length for directory name (0 = no limit)
+    # Truncates from middle with ellipsis: "my-long-dir…-name"
+    # Default: 20
+    max_length: 20
+
+    # Regex patterns to ignore - hide component when directory basename matches
+    # Example: ["node_modules", "^\\..*"] to hide node_modules and hidden dirs
+    # Default: [] (show all directories)
+    ignore: []
 
   # ---------------------------------------------------------------------------
   # RATELIMIT.FIVEHOUR COMPONENT

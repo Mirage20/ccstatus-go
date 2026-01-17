@@ -20,6 +20,7 @@ import (
 	// Import components for self-registration.
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/changes"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/cwd"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
@@ -89,6 +90,8 @@ func run() error {
 			"changes",
 			"duration",
 			"version",
+			"newline",
+			"cwd",
 		}
 	}
 
