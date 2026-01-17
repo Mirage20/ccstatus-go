@@ -10,6 +10,8 @@
 
 A magnificently over-engineered status line generator for Claude Code that proves once and for all that displaying a handful of information requires dozens of Go files, multiple layers of abstraction, and a plugin architecture that would make enterprise Java developers weep with envy.
 
+![statusline](statusline.png)
+
 ## What Is This Monstrosity?
 
 Remember when you just wanted to know which Claude model you're using? Well, we took that simple desire and turned it into a provider-component architecture with self-registering plugins, parallel goroutines, TTL-based caching, and YAML configuration files. Because why use `printf` when you can have **ENTERPRISE GRADE STATUS LINES**.
@@ -146,7 +148,7 @@ components:
       haiku: "green"
 ```
 
-Pro tip: The [`config.yaml`](config.yaml) file has **400 lines** of configuration documentation. That's roughly 395 more lines than you need, but we're nothing if not thorough.
+Pro tip: The [`config.yaml`](config.yaml) file has **nearly 600 lines** of configuration documentation. That's roughly 595 more lines than you need, but we're nothing if not thorough.
 
 ## Architecture (Yes, We Have One)
 
