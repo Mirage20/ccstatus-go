@@ -82,15 +82,6 @@ providers:
       ttl: 0s
 
   # ---------------------------------------------------------------------------
-  # TOKENUSAGE PROVIDER - Reads transcript to calculate token usage
-  # ---------------------------------------------------------------------------
-  tokenusage:
-    cache:
-      # Time-to-live for cached data
-      # Default: 2s (changes frequently during active sessions)
-      ttl: 2s
-
-  # ---------------------------------------------------------------------------
   # RATELIMIT PROVIDER - Fetches rate limits from Anthropic OAuth API
   # ---------------------------------------------------------------------------
   ratelimit:
@@ -147,7 +138,7 @@ components:
     #   {{.Total}}      - Total token count (raw number)
     #   {{.Formatted}}  - Formatted token count with unit (e.g. "22k")
     #   {{.Percentage}} - Usage percentage as float (use {{printf "%.0f" .Percentage}} for whole number)
-    #   {{.Limit}}      - Context limit
+    #   {{.Limit}}      - Context limit (from session or config fallback)
     # Default: "{{.Icon}} {{.Formatted}}"
     template: "{{.Icon}} {{.Formatted}}"
 
@@ -155,15 +146,15 @@ components:
     # Default: "\uea7b" (Context/Tokens icon)
     icon: "\uea7b"
 
-    # Context limit in tokens
+    # Context limit in tokens (fallback when context_window_size is not available)
     # Default: 200000 (200k for Claude models)
     context_limit: 200000
 
     # Threshold percentages for color changes
-    # Default: 80.0
-    warning_threshold: 80.0
-    # Default: 90.0
-    critical_threshold: 90.0
+    # Default: 60.0
+    warning_threshold: 60.0
+    # Default: 75.0
+    critical_threshold: 75.0
 
     # Colors for different usage levels
     # Default: "green"

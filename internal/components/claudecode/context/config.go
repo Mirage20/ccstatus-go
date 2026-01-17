@@ -4,8 +4,8 @@ const (
 	// Default Claude context limit (200k tokens).
 	defaultContextLimit = 200000
 	// Default thresholds for usage levels (in percentage).
-	defaultWarningThreshold  = 80.0
-	defaultCriticalThreshold = 90.0
+	defaultWarningThreshold  = 60.0
+	defaultCriticalThreshold = 75.0
 )
 
 // Config defines configuration for the context (token usage) component.
@@ -23,6 +23,7 @@ type Config struct {
 	Icon string `yaml:"icon,omitempty"`
 
 	// Context limit (default 200k for Claude models)
+	// Used as fallback when context_window_size is not available
 	ContextLimit int64 `yaml:"context_limit,omitempty"`
 
 	// Color thresholds (percentages)

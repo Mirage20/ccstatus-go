@@ -4,7 +4,7 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
 	"github.com/mirage20/ccstatus-go/internal/format"
-	"github.com/mirage20/ccstatus-go/internal/providers/tokenusage"
+	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 )
 
 func init() {
@@ -27,18 +27,31 @@ func New(cfgReader *config.Reader) core.Component {
 
 // Render generates the token usage display string.
 func (c *Component) Render(ctx *core.RenderContext) string {
-	usage, ok := tokenusage.GetTokenUsage(ctx)
+	info, ok := sessioninfo.GetSessionInfo(ctx)
 	if !ok {
 		return ""
 	}
 
-	total := usage.Total()
-	if total == 0 {
-		return ""
+	cw := info.ContextWindow
+
+	// Determine context limit: use dynamic size from session, fallback to config
+	contextLimit := cw.ContextWindowSize
+	if contextLimit == 0 {
+		contextLimit = c.config.ContextLimit
+	}
+
+	// Calculate total context usage including OutputTokens
+	// OutputTokens are included because they become part of the conversation
+	// history sent to the next API call
+	// When current_usage is nil (session just started), total is 0
+	var total int64
+	if cw.CurrentUsage != nil {
+		usage := cw.CurrentUsage
+		total = usage.InputTokens + usage.OutputTokens + usage.CacheCreationInputTokens + usage.CacheReadInputTokens
 	}
 
 	// Calculate percentage
-	percentage := float64(total) / float64(c.config.ContextLimit) * 100
+	percentage := float64(total) / float64(contextLimit) * 100
 
 	// Format token count
 	formatted := format.WithUnit(total)
@@ -49,7 +62,7 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 		"Total":      total,
 		"Formatted":  formatted,
 		"Percentage": percentage, // Raw float for template formatting
-		"Limit":      c.config.ContextLimit,
+		"Limit":      contextLimit,
 	}
 
 	// Render template
@@ -62,7 +75,7 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 
 // RequiredProviders returns the list of provider names this component needs.
 func (c *Component) RequiredProviders() []string {
-	return []string{"tokenusage"}
+	return []string{"sessioninfo"}
 }
 
 // getUsageColor returns color based on usage percentage and configured thresholds.
