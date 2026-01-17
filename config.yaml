@@ -21,6 +21,10 @@
 #   - model              - Shows Claude model name with color coding
 #   - context            - Displays token usage in "k" units
 #   - cwd                - Current working directory basename
+#   - git.branch         - Git branch name with icon
+#   - git.status         - Git working tree status (staged/modified/untracked/conflicts)
+#   - git.sync           - Git ahead/behind upstream counts
+#   - git.stash          - Git stash count
 #   - ratelimit.fivehour - Shows 5-hour rate limit from Anthropic API
 #   - ratelimit.sevenday - Shows 7-day rate limit from Anthropic API
 #   - changes            - Git-style line changes (+added -removed)
@@ -39,6 +43,10 @@ active:
   - version
   - newline
   - cwd
+  - git.branch
+  - git.status
+  - git.sync
+  - git.stash
 
 # ============================================================================
 # SEPARATOR CONFIGURATION
@@ -84,6 +92,15 @@ providers:
       # Format: number + unit (s=seconds, m=minutes, h=hours)
       # Default: 0s (no caching - cheap operation, just returns struct fields)
       ttl: 0s
+
+  # ---------------------------------------------------------------------------
+  # GIT PROVIDER - Provides git repository information
+  # ---------------------------------------------------------------------------
+  git:
+    cache:
+      # Time-to-live for cached git data
+      # Default: 10s
+      ttl: 10s
 
   # ---------------------------------------------------------------------------
   # RATELIMIT PROVIDER - Fetches rate limits from Anthropic OAuth API
@@ -367,6 +384,105 @@ components:
     # Default: "gray"
     color: gray
 
+  # ---------------------------------------------------------------------------
+  # GIT.BRANCH COMPONENT
+  # Shows git branch name or @hash for detached HEAD
+  # ---------------------------------------------------------------------------
+  git.branch:
+    # Display template with available variables:
+    #   {{.Icon}}   - The configured icon
+    #   {{.Branch}} - Branch name or @hash for detached HEAD
+    # Default: "{{.Icon}} {{.Branch}}"
+    template: "{{.Icon}} {{.Branch}}"
+
+    # Icon for branch display (Nerd Font git branch icon)
+    # Default: "\ue725"
+    icon: "\ue725"
+
+    # Color for the display
+    # Default: "gray"
+    color: gray
+
+    # Maximum length for branch name (0 = no limit)
+    # Truncates from middle with ellipsis: "feature/lo…ng-name"
+    # Default: 20
+    max_length: 20
+
+  # ---------------------------------------------------------------------------
+  # GIT.STATUS COMPONENT
+  # Shows working tree status (staged, modified, untracked, conflicts)
+  # ---------------------------------------------------------------------------
+  git.status:
+    # Display template with available variables (all pre-colored):
+    #   {{.Staged}}    - Staged files indicator (e.g., "3")
+    #   {{.Modified}}  - Modified files indicator (e.g., "2")
+    #   {{.Untracked}} - Untracked files indicator (e.g., "1")
+    #   {{.Conflicts}} - Conflicted files indicator (e.g., "2")
+    # Default uses conditionals to only show non-zero counts with spacing
+    template: "{{if .Staged}} {{.Staged}}{{end}}{{if .Modified}} {{.Modified}}{{end}}{{if .Untracked}} {{.Untracked}}{{end}}{{if .Conflicts}} {{.Conflicts}}{{end}}"
+
+    # Icons for each status type (Nerd Font icons)
+    # Default: "\uf05d " (check circle)
+    staged_icon: "\uf05d "
+    # Default: "\uf044 " (pencil)
+    modified_icon: "\uf044 "
+    # Default: "\uf420 " (question)
+    untracked_icon: "\uf420 "
+    # Default: "\uf421 " (exclamation)
+    conflict_icon: "\uf421 "
+
+    # Colors for each status type
+    # Default: "green"
+    staged_color: green
+    # Default: "yellow"
+    modified_color: yellow
+    # Default: "gray"
+    untracked_color: gray
+    # Default: "red"
+    conflict_color: red
+
+  # ---------------------------------------------------------------------------
+  # GIT.SYNC COMPONENT
+  # Shows commits ahead/behind upstream
+  # ---------------------------------------------------------------------------
+  git.sync:
+    # Display template with available variables (all pre-colored):
+    #   {{.Ahead}}  - Commits ahead indicator (e.g., "↑2")
+    #   {{.Behind}} - Commits behind indicator (e.g., "↓3")
+    # Default uses conditionals to only show non-zero counts
+    template: "{{if .Ahead}} {{.Ahead}}{{end}}{{if .Behind}} {{.Behind}}{{end}}"
+
+    # Icons for ahead/behind (Nerd Font icons with trailing space)
+    # Default: "\ueaa1 " (arrow up)
+    ahead_icon: "\ueaa1 "
+    # Default: "\uea9a " (arrow down)
+    behind_icon: "\uea9a "
+
+    # Colors for ahead/behind
+    # Default: "green"
+    ahead_color: green
+    # Default: "red"
+    behind_color: red
+
+  # ---------------------------------------------------------------------------
+  # GIT.STASH COMPONENT
+  # Shows git stash count
+  # ---------------------------------------------------------------------------
+  git.stash:
+    # Display template with available variables:
+    #   {{.Icon}}  - The configured icon
+    #   {{.Count}} - Number of stash entries
+    # Default: "{{.Icon}} {{.Count}}"
+    template: "{{.Icon}} {{.Count}}"
+
+    # Icon for stash display (Nerd Font inbox icon)
+    # Default: "\uf48d" (nf-fa-inbox)
+    icon: "\uf48d"
+
+    # Color for the display
+    # Default: "cyan"
+    color: cyan
+
 # ============================================================================
 # COLOR OPTIONS
 # ============================================================================
@@ -454,3 +570,18 @@ components:
 #   - ratelimit.fivehour
 #   - ratelimit.sevenday
 #   - version
+
+# Multi-line with git info on second line:
+# active:
+#   - model
+#   - context
+#   - ratelimit.fivehour
+#   - ratelimit.sevenday
+#   - duration
+#   - version
+#   - newline
+#   - cwd
+#   - git.branch
+#   - git.status
+#   - git.sync
+#   - git.stash

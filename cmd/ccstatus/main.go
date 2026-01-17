@@ -14,6 +14,7 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/core"
 
 	// Import providers for self-registration.
+	_ "github.com/mirage20/ccstatus-go/internal/providers/git"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/ratelimit"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 
@@ -24,6 +25,10 @@ import (
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
+	_ "github.com/mirage20/ccstatus-go/internal/components/git/branch"
+	_ "github.com/mirage20/ccstatus-go/internal/components/git/stash"
+	_ "github.com/mirage20/ccstatus-go/internal/components/git/status"
+	_ "github.com/mirage20/ccstatus-go/internal/components/git/sync"
 	_ "github.com/mirage20/ccstatus-go/internal/components/layout/newline"
 	_ "github.com/mirage20/ccstatus-go/internal/components/ratelimit/fivehour"
 	_ "github.com/mirage20/ccstatus-go/internal/components/ratelimit/sevenday"
@@ -92,6 +97,10 @@ func run() error {
 			"version",
 			"newline",
 			"cwd",
+			"git.branch",
+			"git.status",
+			"git.sync",
+			"git.stash",
 		}
 	}
 
