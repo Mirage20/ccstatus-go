@@ -69,10 +69,33 @@ func (sl *StatusLine) Render(ctx context.Context) string {
 		}
 	}
 
-	// Join with colored separator
+	// Build colored separator
 	separatorColor := format.ParseColor(sl.separator.Color)
 	coloredSeparator := format.Colorize(separatorColor, sl.separator.Symbol)
-	return strings.Join(outputs, coloredSeparator)
+
+	// Group outputs by newline for multi-line support
+	var lines [][]string
+	var currentLine []string
+
+	for _, output := range outputs {
+		if output == "\n" {
+			lines = append(lines, currentLine)
+			currentLine = nil
+		} else {
+			currentLine = append(currentLine, output)
+		}
+	}
+	lines = append(lines, currentLine)
+
+	// Join each line with separator, then join lines with newline
+	var renderedLines []string
+	for _, line := range lines {
+		if len(line) > 0 {
+			renderedLines = append(renderedLines, strings.Join(line, coloredSeparator))
+		}
+	}
+
+	return strings.Join(renderedLines, "\n")
 }
 
 // gatherData fetches data from all providers in parallel.

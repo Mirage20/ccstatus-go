@@ -25,6 +25,7 @@
 #   - changes            - Git-style line changes (+added -removed)
 #   - duration           - Session and API call duration
 #   - version            - Claude Code version
+#   - newline            - Line break for multi-line status layouts
 
 # Default component order if not specified:
 active:
@@ -412,3 +413,12 @@ components:
 #     template: "{{.Icon}} {{.Utilization}}"
 #   ratelimit.sevenday:
 #     template: "{{.Icon}} {{.Utilization}}"
+
+# Multi-line status layout using newline component:
+# active:
+#   - model
+#   - context
+#   - newline
+#   - ratelimit.fivehour
+#   - ratelimit.sevenday
+#   - version

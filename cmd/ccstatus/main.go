@@ -23,6 +23,7 @@ import (
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
+	_ "github.com/mirage20/ccstatus-go/internal/components/layout/newline"
 	_ "github.com/mirage20/ccstatus-go/internal/components/ratelimit/fivehour"
 	_ "github.com/mirage20/ccstatus-go/internal/components/ratelimit/sevenday"
 )
