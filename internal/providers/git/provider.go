@@ -42,15 +42,27 @@ func (p *Provider) Key() core.ProviderKey {
 	return Key
 }
 
+// gitCmd creates a git command with --no-optional-locks flag to prevent lock contention
+// with concurrent git operations (e.g., Claude Code running git commands).
+func (p *Provider) gitCmd(ctx context.Context, args ...string) *exec.Cmd {
+	//nolint:gosec // args are hardcoded within this package, not user input
+	cmd := exec.CommandContext(ctx, "git", append([]string{"--no-optional-locks"}, args...)...)
+	cmd.Dir = p.workDir
+	return cmd
+}
+
 // Provide returns git repository information.
 func (p *Provider) Provide(ctx context.Context) (any, error) {
+	ctx, cancel := context.WithTimeout(ctx, gitTimeout)
+	defer cancel()
+
 	info := &Info{}
 
 	// Check if it's a git repo by getting the branch
 	branch, err := p.getBranch(ctx)
 	if err != nil {
 		// Not a git repo or git not available - return empty info (not an error)
-		return info, nil //nolint:nilerr // intentional: non-git dirs return empty info
+		return info, nil
 	}
 
 	info.IsRepo = true
@@ -70,12 +82,8 @@ func (p *Provider) Provide(ctx context.Context) (any, error) {
 
 // getBranch returns the current branch name or "@<hash>" for detached HEAD.
 func (p *Provider) getBranch(ctx context.Context) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, gitTimeout)
-	defer cancel()
-
 	// Try to get branch name
-	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--abbrev-ref", "HEAD")
-	cmd.Dir = p.workDir
+	cmd := p.gitCmd(ctx, "rev-parse", "--abbrev-ref", "HEAD")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -93,11 +101,7 @@ func (p *Provider) getBranch(ctx context.Context) (string, error) {
 
 // getShortHash returns the short commit hash prefixed with "@".
 func (p *Provider) getShortHash(ctx context.Context) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, gitTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--short", "HEAD")
-	cmd.Dir = p.workDir
+	cmd := p.gitCmd(ctx, "rev-parse", "--short", "HEAD")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -110,11 +114,7 @@ func (p *Provider) getShortHash(ctx context.Context) (string, error) {
 //
 //nolint:nonamedreturns // named returns document the meaning of each count
 func (p *Provider) getStatusCounts(ctx context.Context) (staged, modified, untracked, conflicts int) {
-	ctx, cancel := context.WithTimeout(ctx, gitTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
-	cmd.Dir = p.workDir
+	cmd := p.gitCmd(ctx, "status", "--porcelain")
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, 0, 0, 0
@@ -158,19 +158,14 @@ func (p *Provider) getStatusCounts(ctx context.Context) (staged, modified, untra
 //
 //nolint:nonamedreturns // named returns document the meaning of each value
 func (p *Provider) getAheadBehind(ctx context.Context) (ahead, behind int, hasUpstream bool) {
-	ctx, cancel := context.WithTimeout(ctx, gitTimeout)
-	defer cancel()
-
 	// Check if upstream exists
-	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--abbrev-ref", "@{upstream}")
-	cmd.Dir = p.workDir
+	cmd := p.gitCmd(ctx, "rev-parse", "--abbrev-ref", "@{upstream}")
 	if err := cmd.Run(); err != nil {
 		return 0, 0, false
 	}
 
 	// Get ahead/behind counts
-	cmd = exec.CommandContext(ctx, "git", "rev-list", "--left-right", "--count", "HEAD...@{upstream}")
-	cmd.Dir = p.workDir
+	cmd = p.gitCmd(ctx, "rev-list", "--left-right", "--count", "HEAD...@{upstream}")
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, 0, false
@@ -187,11 +182,7 @@ func (p *Provider) getAheadBehind(ctx context.Context) (ahead, behind int, hasUp
 
 // getStashCount returns the number of stash entries.
 func (p *Provider) getStashCount(ctx context.Context) int {
-	ctx, cancel := context.WithTimeout(ctx, gitTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "git", "stash", "list")
-	cmd.Dir = p.workDir
+	cmd := p.gitCmd(ctx, "stash", "list")
 	output, err := cmd.Output()
 	if err != nil {
 		return 0
