@@ -13,6 +13,7 @@ const cacheFilename = "ratelimit.json"
 type cacheEntry struct {
 	Data      *RateLimits `json:"data"`
 	Timestamp time.Time   `json:"timestamp"`
+	ErroredAt *time.Time  `json:"errored_at,omitempty"` // Set when saved after an API error
 }
 
 // globalCache manages the shared rate limit cache.
@@ -30,8 +31,8 @@ func (c *globalCache) getCachePath() string {
 	return filepath.Join(c.cacheDir, cacheFilename)
 }
 
-// Get retrieves cached rate limits if valid (not expired).
-func (c *globalCache) Get(ttl time.Duration) (*RateLimits, bool) {
+// load reads and parses the cache file.
+func (c *globalCache) load() (*cacheEntry, bool) {
 	path := c.getCachePath()
 
 	data, err := os.ReadFile(path)
@@ -41,6 +42,17 @@ func (c *globalCache) Get(ttl time.Duration) (*RateLimits, bool) {
 
 	var entry cacheEntry
 	if err = json.Unmarshal(data, &entry); err != nil {
+		return nil, false
+	}
+
+	return &entry, true
+}
+
+// Get retrieves cached rate limits if valid (not expired).
+// Returns stale=true if the data was cached after an API error.
+func (c *globalCache) Get(ttl time.Duration) (*RateLimits, bool) {
+	entry, ok := c.load()
+	if !ok {
 		return nil, false
 	}
 
@@ -49,20 +61,29 @@ func (c *globalCache) Get(ttl time.Duration) (*RateLimits, bool) {
 		return nil, false
 	}
 
+	entry.Data.Stale = entry.ErroredAt != nil
 	return entry.Data, true
+}
+
+// InErrorBackoff returns true if we recently had an API error and should
+// not retry yet. Uses errorBackoffTTL as the backoff duration.
+func (c *globalCache) InErrorBackoff(backoff time.Duration) bool {
+	entry, ok := c.load()
+	if !ok {
+		return false
+	}
+
+	if entry.ErroredAt == nil {
+		return false
+	}
+
+	return time.Since(*entry.ErroredAt) < backoff
 }
 
 // GetStale retrieves cached rate limits regardless of TTL expiry.
 func (c *globalCache) GetStale() (*RateLimits, bool) {
-	path := c.getCachePath()
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, false
-	}
-
-	var entry cacheEntry
-	if err = json.Unmarshal(data, &entry); err != nil {
+	entry, ok := c.load()
+	if !ok {
 		return nil, false
 	}
 
@@ -70,7 +91,7 @@ func (c *globalCache) GetStale() (*RateLimits, bool) {
 }
 
 // Set stores rate limits in the cache.
-func (c *globalCache) Set(data *RateLimits) error {
+func (c *globalCache) Set(data *RateLimits, erroredAt *time.Time) error {
 	// Ensure cache directory exists
 	if err := os.MkdirAll(c.cacheDir, 0700); err != nil {
 		return err
@@ -79,6 +100,7 @@ func (c *globalCache) Set(data *RateLimits) error {
 	entry := cacheEntry{
 		Data:      data,
 		Timestamp: time.Now(),
+		ErroredAt: erroredAt,
 	}
 
 	jsonData, err := json.MarshalIndent(entry, "", "  ")

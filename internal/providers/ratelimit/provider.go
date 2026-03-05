@@ -24,8 +24,9 @@ func init() {
 // This provider manages its own global cache instead of using
 // the per-session CachingProvider.
 type Provider struct {
-	cache *globalCache
-	ttl   time.Duration
+	cache        *globalCache
+	ttl          time.Duration
+	errorBackoff time.Duration
 }
 
 // New creates a new rate limit provider with config.
@@ -34,8 +35,9 @@ func New(cfgReader *config.Reader, _ *core.ClaudeSession) (core.Provider, core.C
 	cfg := config.GetProvider(cfgReader, "ratelimit", defaultConfig())
 
 	return &Provider{
-		cache: newGlobalCache(cfg.CacheDir),
-		ttl:   cfg.TTL,
+		cache:        newGlobalCache(cfg.CacheDir),
+		ttl:          cfg.TTL,
+		errorBackoff: cfg.ErrorBackoff,
 	}, cfg.Cache // TTL: 0 to bypass CachingProvider
 }
 
@@ -46,9 +48,18 @@ func (p *Provider) Key() core.ProviderKey {
 
 // Provide fetches rate limits from API or cache.
 func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
-	// Check global cache first
+	// Check global cache first (serves fresh data or data within error backoff)
 	if cached, found := p.cache.Get(p.ttl); found {
 		return cached, nil
+	}
+
+	// If we recently had an API error, serve stale data without retrying.
+	// This prevents hammering the API during rate limiting.
+	if p.cache.InErrorBackoff(p.errorBackoff) {
+		if stale, found := p.cache.GetStale(); found {
+			stale.Stale = true
+			return stale, nil
+		}
 	}
 
 	// Get OAuth token
@@ -61,8 +72,10 @@ func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	// Fetch from API
 	limits, err := fetchRateLimits(ctx, token)
 	if err != nil {
-		// API error - serve stale cache if available, otherwise empty
+		// API error - mark error time and serve stale cache if available.
+		now := time.Now()
 		if stale, found := p.cache.GetStale(); found {
+			_ = p.cache.Set(stale, &now)
 			stale.Stale = true
 			return stale, nil
 		}
@@ -70,7 +83,7 @@ func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	}
 
 	// Save to global cache (ignore errors - cache is best-effort)
-	_ = p.cache.Set(limits)
+	_ = p.cache.Set(limits, nil)
 
 	return limits, nil
 }

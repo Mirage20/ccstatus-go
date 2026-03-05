@@ -10,7 +10,10 @@ import (
 
 const (
 	// Default cache TTL for rate limits.
-	defaultCacheTTL = 60 * time.Second
+	defaultCacheTTL = 5 * time.Minute
+
+	// Default backoff duration after an API error before retrying.
+	defaultErrorBackoff = 5 * time.Minute
 
 	// Default cache directory.
 	defaultCacheSubdir = "ccstatus"
@@ -20,6 +23,10 @@ const (
 type Config struct {
 	// TTL for the global rate limit cache (not the per-session cache).
 	TTL time.Duration `yaml:"ttl"`
+
+	// ErrorBackoff is how long to wait before retrying after an API error (e.g. 429).
+	// During this period, stale cached data is served without making API calls.
+	ErrorBackoff time.Duration `yaml:"error_backoff"`
 
 	// CacheDir is the directory for the global cache.
 	// Defaults to ~/.cache/ccstatus
@@ -33,8 +40,9 @@ type Config struct {
 // defaultConfig returns the default configuration for ratelimit provider.
 func defaultConfig() *Config {
 	return &Config{
-		TTL:      defaultCacheTTL,
-		CacheDir: defaultCacheDir(),
+		TTL:          defaultCacheTTL,
+		ErrorBackoff: defaultErrorBackoff,
+		CacheDir:     defaultCacheDir(),
 		Cache: core.CacheConfig{
 			TTL: 0, // Bypass CachingProvider - we use our own global cache
 		},
