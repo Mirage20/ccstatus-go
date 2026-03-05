@@ -52,6 +52,23 @@ func (c *globalCache) Get(ttl time.Duration) (*RateLimits, bool) {
 	return entry.Data, true
 }
 
+// GetStale retrieves cached rate limits regardless of TTL expiry.
+func (c *globalCache) GetStale() (*RateLimits, bool) {
+	path := c.getCachePath()
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, false
+	}
+
+	var entry cacheEntry
+	if err = json.Unmarshal(data, &entry); err != nil {
+		return nil, false
+	}
+
+	return entry.Data, true
+}
+
 // Set stores rate limits in the cache.
 func (c *globalCache) Set(data *RateLimits) error {
 	// Ensure cache directory exists

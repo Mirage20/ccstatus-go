@@ -48,6 +48,12 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 	statusColor := c.getUsageColor(fiveHour.Utilization)
 	infoColor := format.ParseColor(c.config.Color)
 
+	// Stale indicator when data is from expired cache
+	stale := ""
+	if limits.Stale {
+		stale = format.Colorize(infoColor, c.config.StaleIndicator)
+	}
+
 	// Build template data with pre-colored values
 	// Icon and Utilization use status color (green/yellow/red)
 	// Remaining and EndTime use info color (gray) as supplementary info
@@ -57,6 +63,7 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 		"Remaining":   format.Colorize(infoColor, remaining),
 		"EndTime":     format.Colorize(infoColor, endTime),
 		"EndTimeRaw":  fiveHour.ResetsAt,
+		"Stale":       stale,
 	}
 
 	// Render template (values are pre-colored)

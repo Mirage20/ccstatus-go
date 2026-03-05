@@ -9,6 +9,7 @@ import (
 type RateLimits struct {
 	FiveHour *RateLimit `json:"five_hour"`
 	SevenDay *RateLimit `json:"seven_day"`
+	Stale    bool       `json:"-"` // True when served from expired cache
 }
 
 // RateLimit represents a single rate limit window.

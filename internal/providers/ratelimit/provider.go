@@ -61,8 +61,12 @@ func (p *Provider) Provide(ctx context.Context) (interface{}, error) {
 	// Fetch from API
 	limits, err := fetchRateLimits(ctx, token)
 	if err != nil {
-		// API error - return empty rate limits (graceful degradation)
-		return &RateLimits{}, nil //nolint:nilerr // Intentional graceful degradation
+		// API error - serve stale cache if available, otherwise empty
+		if stale, found := p.cache.GetStale(); found {
+			stale.Stale = true
+			return stale, nil
+		}
+		return &RateLimits{}, nil
 	}
 
 	// Save to global cache (ignore errors - cache is best-effort)
