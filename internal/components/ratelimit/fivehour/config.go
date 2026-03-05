@@ -15,10 +15,14 @@ type Config struct {
 	//   {{.Remaining}}    - Formatted remaining time (e.g. "2h59m")
 	//   {{.EndTime}}      - Formatted reset time (e.g. "1:30 AM")
 	//   {{.EndTimeRaw}}   - Raw reset time for custom formatting
+	//   {{.Stale}}        - Stale indicator when data is from expired cache
 	Template string `yaml:"template"`
 
 	// Icon/label to display (default: "5h")
 	Icon string `yaml:"icon,omitempty"`
+
+	// Indicator appended when data is served from expired cache
+	StaleIndicator string `yaml:"stale_indicator,omitempty"`
 
 	// Time format for end time (Go time format)
 	// Examples: "3:04 PM", "15:04", "15:04:05"
@@ -40,8 +44,9 @@ type Config struct {
 // defaultConfig returns the default configuration.
 func defaultConfig() *Config {
 	return &Config{
-		Template:          "{{.Icon}} {{.Utilization}}{{if .EndTime}} {{.Remaining}} {{.EndTime}}{{end}}",
+		Template:          "{{.Icon}} {{.Utilization}}{{.Stale}}{{if .EndTime}} {{.Remaining}} {{.EndTime}}{{end}}",
 		Icon:              "5h",
+		StaleIndicator:    "*",
 		EndTimeFormat:     "3:04 PM",
 		WarningThreshold:  defaultWarningThreshold,
 		CriticalThreshold: defaultCriticalThreshold,

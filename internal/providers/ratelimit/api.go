@@ -40,7 +40,8 @@ func fetchRateLimits(ctx context.Context, token string) (*RateLimits, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, body)
 	}
 
 	// Read and parse response
