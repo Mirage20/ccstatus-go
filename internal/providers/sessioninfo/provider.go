@@ -44,5 +44,6 @@ func (p *Provider) Provide(_ context.Context) (interface{}, error) {
 		Cost:          p.session.Cost,
 		ContextWindow: p.session.ContextWindow,
 		Exceeds200K:   p.session.Exceeds200K,
+		RateLimits:    p.session.RateLimits,
 	}, nil
 }

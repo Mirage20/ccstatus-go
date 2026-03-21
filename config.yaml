@@ -25,8 +25,8 @@
 #   - git.status         - Git working tree status (staged/modified/untracked/conflicts)
 #   - git.sync           - Git ahead/behind upstream counts
 #   - git.stash          - Git stash count
-#   - ratelimit.fivehour - Shows 5-hour rate limit from Anthropic API
-#   - ratelimit.sevenday - Shows 7-day rate limit from Anthropic API
+#   - ratelimit.fivehour - Shows 5-hour rate limit from Claude Code session data
+#   - ratelimit.sevenday - Shows 7-day rate limit from Claude Code session data
 #   - changes            - Git-style line changes (+added -removed)
 #   - duration           - Session and API call duration
 #   - version            - Claude Code version
@@ -102,17 +102,6 @@ providers:
       # Default: 10s
       ttl: 10s
 
-  # ---------------------------------------------------------------------------
-  # RATELIMIT PROVIDER - Fetches rate limits from Anthropic OAuth API
-  # ---------------------------------------------------------------------------
-  ratelimit:
-    # Time-to-live for global rate limit cache (account-wide, not per-session)
-    # Default: 60s
-    ttl: 60s
-
-    # Directory for global cache file
-    # Default: ~/.cache/ccstatus (or $XDG_CACHE_HOME/ccstatus)
-    # cache_dir: ""
 
 # ============================================================================
 # COMPONENT CONFIGURATIONS
@@ -216,7 +205,8 @@ components:
 
   # ---------------------------------------------------------------------------
   # RATELIMIT.FIVEHOUR COMPONENT
-  # Shows 5-hour rate limit usage from Anthropic API
+  # Shows 5-hour rate limit usage from Claude Code session data
+  # Only available for Claude.ai subscribers (Pro/Max) after the first API response
   # ---------------------------------------------------------------------------
   ratelimit.fivehour:
     # Display template with available variables (pre-colored):
@@ -257,7 +247,8 @@ components:
 
   # ---------------------------------------------------------------------------
   # RATELIMIT.SEVENDAY COMPONENT
-  # Shows 7-day rate limit usage from Anthropic API
+  # Shows 7-day rate limit usage from Claude Code session data
+  # Only available for Claude.ai subscribers (Pro/Max) after the first API response
   # ---------------------------------------------------------------------------
   ratelimit.sevenday:
     # Display template with available variables (pre-colored):
@@ -514,7 +505,7 @@ components:
 # 4. Cache is session-isolated using Claude session ID
 # 5. Icons require a Nerd Font to display correctly
 # 6. Empty string values typically mean "use default" or "disabled"
-# 7. ratelimit components fetch data from Anthropic OAuth API (requires valid token)
+# 7. ratelimit components read data from Claude Code session JSON (no API call needed)
 
 # ============================================================================
 # EXAMPLE CONFIGURATIONS

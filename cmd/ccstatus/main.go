@@ -15,7 +15,6 @@ import (
 
 	// Import providers for self-registration.
 	_ "github.com/mirage20/ccstatus-go/internal/providers/git"
-	_ "github.com/mirage20/ccstatus-go/internal/providers/ratelimit"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 
 	// Import components for self-registration.

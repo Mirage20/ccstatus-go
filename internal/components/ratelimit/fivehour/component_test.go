@@ -5,43 +5,43 @@ import (
 	"time"
 
 	"github.com/mirage20/ccstatus-go/internal/core"
-	"github.com/mirage20/ccstatus-go/internal/providers/ratelimit"
+	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 )
 
 // TestRender tests the 5-hour rate limit component rendering.
 func TestRender(t *testing.T) {
-	// Create test reset times
-	twoHoursFromNow := time.Now().Add(2 * time.Hour)
-	thirtyMinsFromNow := time.Now().Add(30 * time.Minute)
+	// Create test reset times as unix epoch seconds
+	twoHoursFromNow := time.Now().Add(2 * time.Hour).Unix()
+	thirtyMinsFromNow := time.Now().Add(30 * time.Minute).Unix()
 
 	tests := []struct {
 		name       string
 		config     *Config
-		limits     *ratelimit.RateLimits
+		rateLimits *core.SessionRateLimits
 		want       string
 		wantPrefix string
 	}{
 		{
-			name:   "returns empty when rate limits is missing",
-			config: defaultConfig(),
-			limits: nil,
-			want:   "",
+			name:       "shows placeholder when rate limits is missing",
+			config:     defaultConfig(),
+			rateLimits: nil,
+			want:       "\033[90m5h\033[0m \033[90m--\033[0m",
 		},
 		{
-			name:   "returns empty when five hour is nil",
+			name:   "shows placeholder when five hour is nil",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
+			rateLimits: &core.SessionRateLimits{
 				FiveHour: nil,
 			},
-			want: "",
+			want: "\033[90m5h\033[0m \033[90m--\033[0m",
 		},
 		{
 			name:   "renders utilization with green color when under 60%",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 25.0,
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 25.0,
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			// Icon and utilization green, remaining and end time gray
@@ -50,10 +50,10 @@ func TestRender(t *testing.T) {
 		{
 			name:   "renders utilization with yellow color when between 60-80%",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 65.0,
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 65.0,
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			wantPrefix: "\033[33m5h\033[0m \033[33m65%\033[0m \033[90m",
@@ -61,10 +61,10 @@ func TestRender(t *testing.T) {
 		{
 			name:   "renders utilization with red color when over 80%",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 85.0,
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 85.0,
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			wantPrefix: "\033[31m5h\033[0m \033[31m85%\033[0m \033[90m",
@@ -72,10 +72,10 @@ func TestRender(t *testing.T) {
 		{
 			name:   "renders remaining time in minutes when under an hour",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 20.0,
-					ResetsAt:    &thirtyMinsFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 20.0,
+					ResetsAt:       &thirtyMinsFromNow,
 				},
 			},
 			wantPrefix: "\033[32m5h\033[0m \033[32m20%\033[0m \033[90m",
@@ -83,10 +83,10 @@ func TestRender(t *testing.T) {
 		{
 			name:   "renders remaining time in hours and minutes",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 20.0,
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 20.0,
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			wantPrefix: "\033[32m5h\033[0m \033[32m20%\033[0m \033[90m",
@@ -94,10 +94,10 @@ func TestRender(t *testing.T) {
 		{
 			name:   "handles nil reset time gracefully",
 			config: defaultConfig(),
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 50.0,
-					ResetsAt:    nil,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 50.0,
+					ResetsAt:       nil,
 				},
 			},
 			// No trailing spaces or empty color codes when reset time is nil
@@ -116,10 +116,10 @@ func TestRender(t *testing.T) {
 				CriticalColor:     "red",
 				Color:             "gray",
 			},
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 30.0,
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 30.0,
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			want: "\033[32m󰔛\033[0m \033[32m30%\033[0m",
@@ -137,10 +137,10 @@ func TestRender(t *testing.T) {
 				CriticalColor:     "red",
 				Color:             "gray",
 			},
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 40.0, // Would be yellow with custom threshold
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 40.0, // Would be yellow with custom threshold
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			want: "\033[33m5h\033[0m \033[33m40%\033[0m", // Yellow due to custom threshold
@@ -158,10 +158,10 @@ func TestRender(t *testing.T) {
 				CriticalColor:     "red",
 				Color:             "cyan", // Custom info color
 			},
-			limits: &ratelimit.RateLimits{
-				FiveHour: &ratelimit.RateLimit{
-					Utilization: 25.0,
-					ResetsAt:    &twoHoursFromNow,
+			rateLimits: &core.SessionRateLimits{
+				FiveHour: &core.SessionRateLimit{
+					UsedPercentage: 25.0,
+					ResetsAt:       &twoHoursFromNow,
 				},
 			},
 			// Remaining time should be cyan instead of gray
@@ -174,9 +174,10 @@ func TestRender(t *testing.T) {
 			c := &Component{config: tt.config}
 			ctx := core.NewRenderContext()
 
-			if tt.limits != nil {
-				ctx.Set(ratelimit.Key, tt.limits)
+			info := &sessioninfo.SessionInfo{
+				RateLimits: tt.rateLimits,
 			}
+			ctx.Set(sessioninfo.Key, info)
 
 			got := c.Render(ctx)
 
@@ -196,7 +197,7 @@ func TestRequiredProviders(t *testing.T) {
 	c := &Component{config: defaultConfig()}
 	providers := c.RequiredProviders()
 
-	if len(providers) != 1 || providers[0] != "ratelimit" {
-		t.Errorf("RequiredProviders() = %v, want [ratelimit]", providers)
+	if len(providers) != 1 || providers[0] != "sessioninfo" {
+		t.Errorf("RequiredProviders() = %v, want [sessioninfo]", providers)
 	}
 }

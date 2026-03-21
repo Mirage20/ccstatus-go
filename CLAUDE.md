@@ -109,6 +109,16 @@ The tool expects JSON input via stdin with the following structure:
     "used_percentage": 81,
     "remaining_percentage": 19
   },
-  "exceeds_200k_tokens": false
+  "exceeds_200k_tokens": false,
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 15,
+      "resets_at": 1774087200
+    },
+    "seven_day": {
+      "used_percentage": 5,
+      "resets_at": 1774591200
+    }
+  }
 }
 ```

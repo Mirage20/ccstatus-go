@@ -3,17 +3,18 @@ package core
 // ClaudeSession represents the Claude Code session information passed via stdin
 // This is NOT a provider - it's the runtime information from Claude Code.
 type ClaudeSession struct {
-	HookEventName  string        `json:"hook_event_name,omitempty"`
-	SessionID      string        `json:"session_id"`
-	TranscriptPath string        `json:"transcript_path"`
-	CWD            string        `json:"cwd"`
-	Model          ModelInfo     `json:"model"`
-	Workspace      Workspace     `json:"workspace"`
-	Version        string        `json:"version"`
-	OutputStyle    OutputStyle   `json:"output_style"`
-	Cost           CostInfo      `json:"cost"`
-	ContextWindow  ContextWindow `json:"context_window"`
-	Exceeds200K    bool          `json:"exceeds_200k_tokens"`
+	HookEventName  string             `json:"hook_event_name,omitempty"`
+	SessionID      string             `json:"session_id"`
+	TranscriptPath string             `json:"transcript_path"`
+	CWD            string             `json:"cwd"`
+	Model          ModelInfo          `json:"model"`
+	Workspace      Workspace          `json:"workspace"`
+	Version        string             `json:"version"`
+	OutputStyle    OutputStyle        `json:"output_style"`
+	Cost           CostInfo           `json:"cost"`
+	ContextWindow  ContextWindow      `json:"context_window"`
+	Exceeds200K    bool               `json:"exceeds_200k_tokens"`
+	RateLimits     *SessionRateLimits `json:"rate_limits,omitempty"`
 }
 
 // ContextWindow contains context window information from Claude Code.
@@ -53,6 +54,19 @@ type Workspace struct {
 // OutputStyle contains output style information.
 type OutputStyle struct {
 	Name string `json:"name"`
+}
+
+// SessionRateLimits contains rate limit data from the Claude Code session JSON.
+// Only present for Claude.ai subscribers (Pro/Max) after the first API response.
+type SessionRateLimits struct {
+	FiveHour *SessionRateLimit `json:"five_hour,omitempty"`
+	SevenDay *SessionRateLimit `json:"seven_day,omitempty"`
+}
+
+// SessionRateLimit represents a single rate limit window from the session JSON.
+type SessionRateLimit struct {
+	UsedPercentage float64 `json:"used_percentage"`
+	ResetsAt       *int64  `json:"resets_at,omitempty"` // Unix epoch seconds
 }
 
 // CostInfo contains cost and usage metrics.

@@ -7,7 +7,7 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/config"
 	"github.com/mirage20/ccstatus-go/internal/core"
 	"github.com/mirage20/ccstatus-go/internal/format"
-	"github.com/mirage20/ccstatus-go/internal/providers/ratelimit"
+	"github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 )
 
 func init() {
@@ -29,41 +29,54 @@ func New(cfgReader *config.Reader) core.Component {
 
 // Render generates the rate limit display string.
 func (c *Component) Render(ctx *core.RenderContext) string {
-	limits, ok := ratelimit.GetRateLimits(ctx)
-	if !ok || limits.SevenDay == nil {
+	info, ok := sessioninfo.GetSessionInfo(ctx)
+	if !ok {
 		return ""
 	}
 
-	sevenDay := limits.SevenDay
+	infoColor := format.ParseColor(c.config.Color)
+
+	// When rate limit data is not available, show placeholder
+	if info.RateLimits == nil || info.RateLimits.SevenDay == nil {
+		data := map[string]interface{}{
+			"Icon":        format.Colorize(infoColor, c.config.Icon),
+			"Utilization": format.Colorize(infoColor, "--"),
+			"Remaining":   "",
+			"EndTime":     "",
+			"EndTimeRaw":  (*time.Time)(nil),
+		}
+		return format.RenderTemplate(c.config.Template, data)
+	}
+
+	sevenDay := info.RateLimits.SevenDay
+
+	// Convert unix epoch to time.Time for remaining/end time calculation
+	var resetsAt *time.Time
+	if sevenDay.ResetsAt != nil {
+		t := time.Unix(*sevenDay.ResetsAt, 0)
+		resetsAt = &t
+	}
 
 	// Calculate remaining time
 	remaining := ""
 	endTime := ""
-	if sevenDay.ResetsAt != nil {
-		remaining = formatRemainingDays(*sevenDay.ResetsAt)
-		endTime = sevenDay.ResetsAt.Local().Format(c.config.EndTimeFormat)
+	if resetsAt != nil {
+		remaining = formatRemainingDays(*resetsAt)
+		endTime = resetsAt.Local().Format(c.config.EndTimeFormat)
 	}
 
 	// Determine colors
-	statusColor := c.getUsageColor(sevenDay.Utilization)
-	infoColor := format.ParseColor(c.config.Color)
-
-	// Stale indicator when data is from expired cache
-	stale := ""
-	if limits.Stale {
-		stale = format.Colorize(infoColor, c.config.StaleIndicator)
-	}
+	statusColor := c.getUsageColor(sevenDay.UsedPercentage)
 
 	// Build template data with pre-colored values
 	// Icon and Utilization use status color (green/yellow/red)
 	// Remaining and EndTime use info color (gray) as supplementary info
 	data := map[string]interface{}{
 		"Icon":        format.Colorize(statusColor, c.config.Icon),
-		"Utilization": format.Colorize(statusColor, fmt.Sprintf("%.0f%%", sevenDay.Utilization)),
+		"Utilization": format.Colorize(statusColor, fmt.Sprintf("%.0f%%", sevenDay.UsedPercentage)),
 		"Remaining":   format.Colorize(infoColor, remaining),
 		"EndTime":     format.Colorize(infoColor, endTime),
-		"EndTimeRaw":  sevenDay.ResetsAt,
-		"Stale":       stale,
+		"EndTimeRaw":  resetsAt,
 	}
 
 	// Render template (values are pre-colored)
@@ -72,7 +85,7 @@ func (c *Component) Render(ctx *core.RenderContext) string {
 
 // RequiredProviders returns the list of provider names this component needs.
 func (c *Component) RequiredProviders() []string {
-	return []string{"ratelimit"}
+	return []string{"sessioninfo"}
 }
 
 // getUsageColor returns color based on utilization and configured thresholds.
