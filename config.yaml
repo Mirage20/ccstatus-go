@@ -29,6 +29,7 @@
 #   - ratelimit.sevenday - Shows 7-day rate limit from Claude Code session data
 #   - changes            - Git-style line changes (+added -removed)
 #   - duration           - Session and API call duration
+#   - account            - Active Claude Code login profile (macOS only)
 #   - version            - Claude Code version
 #   - newline            - Line break for multi-line status layouts
 
@@ -40,6 +41,7 @@ active:
   - ratelimit.sevenday
   - changes
   - duration
+  - account
   - version
   - newline
   - cwd
@@ -101,6 +103,30 @@ providers:
       # Time-to-live for cached git data
       # Default: 10s
       ttl: 10s
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNT PROVIDER - Detects which Claude Code login is currently active by
+  # comparing the active Keychain credentials against saved profile snapshots.
+  # macOS only.
+  # ---------------------------------------------------------------------------
+  account:
+    cache:
+      # Time-to-live for cached account data.
+      # Default: 60s
+      ttl: 60s
+
+    # Keychain service name holding the live OAuth credentials.
+    # Default: "Claude Code-credentials"
+    active_slot: "Claude Code-credentials"
+
+    # Map of profile name -> Keychain service name for its saved snapshot.
+    # Create these slots by copying the active token while logged into each
+    # account:
+    #   security find-generic-password -s "Claude Code-credentials" -w \
+    #     | security add-generic-password -s "Claude Code-<name>" -a "$USER" -w -
+    profiles:
+      personal: "Claude Code-personal"
+      work: "Claude Code-work"
 
 
 # ============================================================================
@@ -355,6 +381,39 @@ components:
     # Whether to show API duration alongside total duration
     # Default: true
     show_api_duration: true
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNT COMPONENT
+  # Shows the active Claude Code login profile (e.g. "personal" / "work").
+  # Detects by comparing the live Keychain credentials against saved snapshots.
+  # macOS only - renders nothing on other platforms.
+  # ---------------------------------------------------------------------------
+  account:
+    # Display template with available variables:
+    #   {{.Profile}} - Profile name (e.g. "personal", "work", "unknown")
+    #   {{.Icon}}    - The configured icon (if any)
+    # Default: "{{.Icon}}{{.Profile}}"
+    template: "{{.Icon}}{{.Profile}}"
+
+    # Icon to display before the profile name
+    # Default: "" (no icon)
+    icon: ""
+
+    # Colors for each profile (substring match on profile name from provider)
+    # Profiles not listed fall back to default_color.
+    # Default values shown:
+    colors:
+      personal: cyan
+      work: magenta
+
+    # Fallback color when the active profile has no entry in colors
+    # Default: "gray"
+    default_color: gray
+
+    # Hide the component when the active token doesn't match any saved
+    # profile slot (the provider reports "unknown" in that case).
+    # Default: true
+    hide_unknown: true
 
   # ---------------------------------------------------------------------------
   # VERSION COMPONENT

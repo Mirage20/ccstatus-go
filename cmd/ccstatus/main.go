@@ -14,10 +14,12 @@ import (
 	"github.com/mirage20/ccstatus-go/internal/core"
 
 	// Import providers for self-registration.
+	_ "github.com/mirage20/ccstatus-go/internal/providers/account"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/git"
 	_ "github.com/mirage20/ccstatus-go/internal/providers/sessioninfo"
 
 	// Import components for self-registration.
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/account"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/changes"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/cwd"
@@ -93,6 +95,7 @@ func run() error {
 			"ratelimit.sevenday",
 			"changes",
 			"duration",
+			"account",
 			"version",
 			"newline",
 			"cwd",
