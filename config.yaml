@@ -34,6 +34,9 @@
 #   - newline            - Line break for multi-line status layouts
 
 # Default component order if not specified:
+# Note: `account` is registered but not enabled by default — it's only useful
+# if you switch between multiple Claude Code logins. Add it to this list if
+# you want it (see the example near the bottom of this file).
 active:
   - model
   - context
@@ -41,7 +44,6 @@ active:
   - ratelimit.sevenday
   - changes
   - duration
-  - account
   - version
   - newline
   - cwd
@@ -635,3 +637,16 @@ components:
 #   - git.status
 #   - git.sync
 #   - git.stash
+
+# Show the active Claude Code login (for users juggling multiple accounts).
+# Requires per-account OAuth tokens saved in the macOS Keychain — see the
+# `account` provider config above for the default Keychain slot names.
+# active:
+#   - model
+#   - context
+#   - ratelimit.fivehour
+#   - ratelimit.sevenday
+#   - changes
+#   - duration
+#   - account
+#   - version

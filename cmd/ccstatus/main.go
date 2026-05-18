@@ -95,7 +95,6 @@ func run() error {
 			"ratelimit.sevenday",
 			"changes",
 			"duration",
-			"account",
 			"version",
 			"newline",
 			"cwd",
