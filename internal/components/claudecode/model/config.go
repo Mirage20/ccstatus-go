@@ -24,11 +24,15 @@ func defaultConfig() *Config {
 			"opus":   "\uf2db", // Nerd Font: Microchip icon
 			"sonnet": "\uf2db", // Nerd Font: Microchip icon
 			"haiku":  "\uf2db", // Nerd Font: Microchip icon
+			"fable":  "\uf2db", // Nerd Font: Microchip icon
+			"mythos": "\uf2db", // Nerd Font: Microchip icon
 		},
 		Colors: map[string]string{
 			"opus":   "magenta",
 			"sonnet": "cyan",
 			"haiku":  "green",
+			"fable":  "blue",
+			"mythos": "yellow",
 		},
 	}
 }

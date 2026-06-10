@@ -158,6 +158,8 @@ components:
       opus: "\uf2db"    # Microchip icon
       sonnet: "\uf2db"  # Microchip icon
       haiku: "\uf2db"   # Microchip icon
+      fable: "\uf2db"   # Microchip icon
+      mythos: "\uf2db"  # Microchip icon
 
     # Colors mapped by model pattern (substring match on model ID)
     # Default values shown:
@@ -165,6 +167,8 @@ components:
       opus: magenta
       sonnet: cyan
       haiku: green
+      fable: blue
+      mythos: yellow
 
   # ---------------------------------------------------------------------------
   # CONTEXT COMPONENT

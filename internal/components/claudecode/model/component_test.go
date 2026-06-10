@@ -55,6 +55,28 @@ func TestRender(t *testing.T) {
 			want: "\033[32m\uf2db Haiku\033[0m", // Green color + icon + "Haiku"
 		},
 		{
+			name:   "renders Fable model with default config",
+			config: defaultConfig(),
+			sessionInfo: &sessioninfo.SessionInfo{
+				Model: core.ModelInfo{
+					ID:          "claude-fable-5",
+					DisplayName: "Fable 5",
+				},
+			},
+			want: "\033[34m\uf2db Fable\033[0m", // Blue color + icon + "Fable"
+		},
+		{
+			name:   "renders Mythos model with default config",
+			config: defaultConfig(),
+			sessionInfo: &sessioninfo.SessionInfo{
+				Model: core.ModelInfo{
+					ID:          "claude-mythos-1",
+					DisplayName: "Mythos 1",
+				},
+			},
+			want: "\033[33m\uf2db Mythos\033[0m", // Yellow color + icon + "Mythos"
+		},
+		{
 			name:   "extracts Opus from complex display name",
 			config: defaultConfig(),
 			sessionInfo: &sessioninfo.SessionInfo{

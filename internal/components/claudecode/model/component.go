@@ -74,6 +74,10 @@ func (c *Component) getShortName(info *sessioninfo.SessionInfo) string {
 		return "Sonnet"
 	case strings.Contains(displayNameLower, "haiku"):
 		return "Haiku"
+	case strings.Contains(displayNameLower, "fable"):
+		return "Fable"
+	case strings.Contains(displayNameLower, "mythos"):
+		return "Mythos"
 	default:
 		// If unknown, return a shortened version
 		if len(displayName) > maxDisplayNameLength {
