@@ -265,3 +265,38 @@ func TestGetComponent(t *testing.T) {
 		})
 	}
 }
+
+// TestGetComponentMapOverrideSemantics documents (and locks) how a partial
+// map[string]string override in YAML interacts with a defaultConfig() that
+// ships a non-empty map, as used by the effort/model/account components'
+// icons and colors maps.
+//
+// koanf's UnmarshalWithConf does not set mapstructure's ZeroFields, and
+// mapstructure's decodeMapFromMap reuses the destination map instead of
+// replacing it when it is non-nil - so overriding one key MERGES into the
+// existing map and leaves sibling keys untouched, rather than replacing the
+// whole map.
+func TestGetComponentMapOverrideSemantics(t *testing.T) {
+	type mapConfig struct {
+		Colors map[string]string `yaml:"colors"`
+	}
+
+	k := koanf.New(".")
+	_ = k.Set("components.mycomponent.colors.high", "red")
+
+	reader := &Reader{k: k}
+	got := GetComponent(reader, "mycomponent", &mapConfig{
+		Colors: map[string]string{"high": "yellow", "low": "gray"},
+	})
+
+	if got.Colors["high"] != "red" {
+		t.Errorf("override not applied: Colors[high] = %q, want %q", got.Colors["high"], "red")
+	}
+	if got.Colors["low"] != "gray" {
+		t.Errorf(
+			"partial map override replaced the whole map instead of merging: Colors[low] = %q, want %q (unchanged default)",
+			got.Colors["low"],
+			"gray",
+		)
+	}
+}

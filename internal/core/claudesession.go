@@ -14,6 +14,9 @@ type ClaudeSession struct {
 	Cost           CostInfo           `json:"cost"`
 	ContextWindow  ContextWindow      `json:"context_window"`
 	Exceeds200K    bool               `json:"exceeds_200k_tokens"`
+	FastMode       bool               `json:"fast_mode"`
+	Effort         *EffortInfo        `json:"effort,omitempty"`
+	Thinking       *ThinkingInfo      `json:"thinking,omitempty"`
 	RateLimits     *SessionRateLimits `json:"rate_limits,omitempty"`
 }
 
@@ -54,6 +57,24 @@ type Workspace struct {
 // OutputStyle contains output style information.
 type OutputStyle struct {
 	Name string `json:"name"`
+}
+
+// EffortInfo contains the effective reasoning effort level for the session.
+// Nil on models that don't support effort selection - Claude Code omits the
+// "effort" key entirely for those. The level is already clamped to the model's
+// capability, which is why it must be read from here and never from
+// ~/.claude/settings.json (that file holds the unclamped persisted preference
+// and can disagree with reality).
+type EffortInfo struct {
+	// Level is the effective effort level: "low", "medium", "high", "xhigh" or "max".
+	Level string `json:"level"`
+}
+
+// ThinkingInfo reports whether extended thinking is enabled for the session.
+// The pointer distinguishes "this Claude Code version does not report
+// thinking" (nil) from "thinking is explicitly disabled" (Enabled: false).
+type ThinkingInfo struct {
+	Enabled bool `json:"enabled"`
 }
 
 // SessionRateLimits contains rate limit data from the Claude Code session JSON.

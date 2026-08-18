@@ -19,6 +19,9 @@
 # Comment out or remove components you don't want to display.
 # Available components:
 #   - model              - Shows Claude model name with color coding
+#   - effort             - Reasoning effort level (models that support it only)
+#   - thinking           - Extended thinking indicator (hidden while on)
+#   - fastmode           - Fast mode indicator (hidden while off)
 #   - context            - Displays token usage in "k" units
 #   - cwd                - Current working directory basename
 #   - git.branch         - Git branch name with icon
@@ -39,6 +42,9 @@
 # you want it (see the example near the bottom of this file).
 active:
   - model
+  - effort
+  - thinking
+  - fastmode
   - context
   - ratelimit.fivehour
   - ratelimit.sevenday
@@ -169,6 +175,112 @@ components:
       haiku: green
       fable: blue
       mythos: yellow
+
+  # ---------------------------------------------------------------------------
+  # EFFORT COMPONENT
+  # Shows the reasoning effort level. Only sent for models that support it.
+  # Note: Claude Code resolves meta-modes like "ultracode" and "auto" to one
+  # of the levels below before sending it here, so there's no separate entry
+  # for them.
+  # ---------------------------------------------------------------------------
+  effort:
+    # Display template with available variables:
+    #   {{.Level}} - The effort level ("low", "medium", "high", "xhigh", "max")
+    #   {{.Icon}}  - The icon mapped to the current level
+    # Default: "{{.Icon}} {{.Level}}"
+    template: "{{.Icon}} {{.Level}}"
+
+    # Icons per effort level (exact match, Nerd Font icons). A level with no
+    # entry here (or in colors below) falls back to a fixed question-mark
+    # icon in gray.
+    # Default values shown:
+    icons:
+      low: "\ueeef"     # Cloud moon icon
+      medium: "\uee1d"  # Walking icon
+      high: "\uef0c"    # Running icon
+      xhigh: "\uee9c"   # Brain icon
+      max: "\uf06d"     # Fire icon
+
+    # Colors per effort level
+    # Default values shown:
+    colors:
+      low: gray
+      medium: cyan
+      high: yellow
+      xhigh: magenta
+      max: red
+
+    # Label shown in place of the level when the model doesn't support effort
+    # Default: "--"
+    unsupported_label: "--"
+
+    # Hide the component when the model doesn't report an effort level
+    # Default: true
+    hide_unsupported: true
+
+  # ---------------------------------------------------------------------------
+  # THINKING COMPONENT
+  # Shows whether extended thinking is enabled. Thinking is on by default, so
+  # this is hidden while enabled and only appears once it's turned off.
+  # ---------------------------------------------------------------------------
+  thinking:
+    # Display template with available variables:
+    #   {{.Icon}}    - Icon for the current state (icon when on, off_icon when off)
+    #   {{.Enabled}} - Boolean, for {{if .Enabled}}...{{end}}
+    # Default: "{{.Icon}}"
+    template: "{{.Icon}}"
+
+    # Icon while enabled (only used if hide_when_enabled: false)
+    # Default: "\uf075" (comment icon)
+    icon: "\uf075"
+
+    # Icon while disabled
+    # Default: "\ued96" (comment slash icon)
+    off_icon: "\ued96"
+
+    # Color while enabled
+    # Default: "cyan"
+    color: cyan
+
+    # Color while disabled
+    # Default: "gray"
+    off_color: gray
+
+    # Hide the component while thinking is enabled
+    # Default: true
+    hide_when_enabled: true
+
+  # ---------------------------------------------------------------------------
+  # FASTMODE COMPONENT
+  # Shows whether fast mode (/fast) is active
+  # ---------------------------------------------------------------------------
+  fastmode:
+    # Display template with available variables:
+    #   {{.Icon}}    - Icon for the current state (icon when active, off_icon when off)
+    #   {{.Enabled}} - Boolean, for {{if .Enabled}}...{{end}}
+    # Default: "{{.Icon}}"
+    template: "{{.Icon}}"
+
+    # Icon while active
+    # Default: "\uf0e7" (flash icon)
+    icon: "\uf0e7"
+
+    # Icon while off (only used if hide_when_off: false)
+    # Default: "" (nothing)
+    off_icon: ""
+
+    # Color while active
+    # Default: "yellow"
+    color: yellow
+
+    # Color while off
+    # Default: "gray"
+    off_color: gray
+
+    # Hide the component while fast mode is off. Set an off_icon too if you
+    # turn this off - the default empty one renders nothing either way.
+    # Default: true
+    hide_when_off: true
 
   # ---------------------------------------------------------------------------
   # CONTEXT COMPONENT
