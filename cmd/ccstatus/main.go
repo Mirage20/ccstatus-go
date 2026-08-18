@@ -24,7 +24,10 @@ import (
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/context"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/cwd"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/duration"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/effort"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/fastmode"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/model"
+	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/thinking"
 	_ "github.com/mirage20/ccstatus-go/internal/components/claudecode/version"
 	_ "github.com/mirage20/ccstatus-go/internal/components/git/branch"
 	_ "github.com/mirage20/ccstatus-go/internal/components/git/stash"
@@ -90,6 +93,9 @@ func run() error {
 		// Default component order if no active list is configured
 		componentNames = []string{
 			"model",
+			"effort",
+			"thinking",
+			"fastmode",
 			"context",
 			"ratelimit.fivehour",
 			"ratelimit.sevenday",
@@ -211,6 +217,9 @@ func showHelp() {
 			TotalLinesRemoved:  10,      //nolint:mnd // Test data value
 		},
 		Exceeds200K: false,
+		FastMode:    false,
+		Effort:      &core.EffortInfo{Level: "high"},
+		Thinking:    &core.ThinkingInfo{Enabled: true},
 	}
 
 	encoder := json.NewEncoder(os.Stdout)

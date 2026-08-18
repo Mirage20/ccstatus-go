@@ -11,5 +11,8 @@ type SessionInfo struct {
 	Cost          core.CostInfo           `json:"cost"`
 	ContextWindow core.ContextWindow      `json:"context_window"`
 	Exceeds200K   bool                    `json:"exceeds_200k"`
+	FastMode      bool                    `json:"fast_mode"`
+	Effort        *core.EffortInfo        `json:"effort,omitempty"`
+	Thinking      *core.ThinkingInfo      `json:"thinking,omitempty"`
 	RateLimits    *core.SessionRateLimits `json:"rate_limits,omitempty"`
 }
