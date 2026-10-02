@@ -44,6 +44,9 @@ func (p *Provider) Provide(_ context.Context) (interface{}, error) {
 		Cost:          p.session.Cost,
 		ContextWindow: p.session.ContextWindow,
 		Exceeds200K:   p.session.Exceeds200K,
+		FastMode:      p.session.FastMode,
+		Effort:        p.session.Effort,
+		Thinking:      p.session.Thinking,
 		RateLimits:    p.session.RateLimits,
 	}, nil
 }

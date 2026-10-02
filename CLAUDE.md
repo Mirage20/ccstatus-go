@@ -110,6 +110,13 @@ The tool expects JSON input via stdin with the following structure:
     "remaining_percentage": 19
   },
   "exceeds_200k_tokens": false,
+  "fast_mode": false,
+  "effort": {
+    "level": "high"
+  },
+  "thinking": {
+    "enabled": true
+  },
   "rate_limits": {
     "five_hour": {
       "used_percentage": 15,
@@ -122,3 +129,5 @@ The tool expects JSON input via stdin with the following structure:
   }
 }
 ```
+
+`effort` is omitted entirely on models that don't support effort selection (not `null` - the key is absent). `thinking` is absent on Claude Code versions older than 2.1. Both cases must be handled as "no data", not as false/off.

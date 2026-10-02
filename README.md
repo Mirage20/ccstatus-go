@@ -123,7 +123,7 @@ Example configuration that definitely isn't overkill:
 
 ```yaml
 # Choose your fighters (components)
-active: ["model", "context", "ratelimit.fivehour", "ratelimit.sevenday"]
+active: ["model", "effort", "context", "ratelimit.fivehour", "ratelimit.sevenday"]
 
 # Customize that separator like your life depends on it
 separator:
@@ -146,6 +146,12 @@ components:
       opus: "red"
       sonnet: "yellow"
       haiku: "green"
+  effort:
+    template: "{{.Icon}} {{.Level}}"
+    icons:
+      max: "🔥"     # For when you really mean it
+    colors:
+      max: "red"
 ```
 
 Pro tip: The [`config.yaml`](config.yaml) file has **nearly 600 lines** of configuration documentation. That's roughly 595 more lines than you need, but we're nothing if not thorough.
@@ -187,7 +193,7 @@ Because sometimes you need to transform this:
 
 Into this:
 ```
-🎭 Opus | 22k | +67-12 | v1.0.89
+🎭 Opus | 🧠 xhigh | 22k | +67-12 | v1.0.89
 ```
 
 And obviously, that requires:
